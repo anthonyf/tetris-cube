@@ -18,6 +18,15 @@ public class IntVector3 {
         this.z = z;
     }
 
+    public static Vector3[] AxisEulerAngles = 
+    {
+        new Vector3(  0,  0,  90),
+        new Vector3(  0,  0, -90),
+        new Vector3(  0, 90,   0),
+        new Vector3( 90,  0,   0),
+        new Vector3(-90,  0,   0),
+    };
+
     public int x { get; private set; }
     public int y { get; private set; }
     public int z { get; private set; }

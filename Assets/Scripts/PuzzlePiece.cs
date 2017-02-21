@@ -103,9 +103,12 @@ public class PuzzlePiece : MonoBehaviour {
                     new IntVector3(1, 0, 0),
                     new IntVector3(1, 1, 0) });
                 break;
+            default:
+                throw new NotImplementedException("Unsupported puzzle piece type");
         }
     }
 
+    // Move blocks down as close to zero on all 3 axis
     private void Normalize()
     {
         int minX = 4;
@@ -127,6 +130,18 @@ public class PuzzlePiece : MonoBehaviour {
     {
         blocks.ForEach(b => b.Rotate(axis));
         Normalize();
+        StartCoroutine(DoRotation(axis));
+    }
+
+    IEnumerator DoRotation(Axis axis)
+    {
+        var startRotation = transform.localEulerAngles;
+        var endRotation = new Vector3(
+            startRotation.x + IntVector3.AxisEulerAngles[(int)axis].x,
+            startRotation.y + IntVector3.AxisEulerAngles[(int)axis].y,
+            startRotation.z + IntVector3.AxisEulerAngles[(int)axis].z);
+        var startPosition = transform.localPosition;
+        yield return null;
     }
 
     public void Move(IntVector3 offset)

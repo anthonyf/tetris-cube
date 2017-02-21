@@ -31,6 +31,6 @@ public class Block : MonoBehaviour {
     public void SetPosition(IntVector3 position)
     {
         this.position = position;
-        transform.localPosition = position.ToVector3();
+        //transform.localPosition = position.ToVector3();
     }
 }
