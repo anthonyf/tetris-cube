@@ -28,74 +28,42 @@ public class PuzzlePieces : MonoBehaviour {
 
         var p = Instantiate(puzzlePiecePrefab);
         p.transform.SetParent(transform, false);
-        p.Initialize(Color.cyan, new IntVector3[4] {
-            new IntVector3(0, 0, 0),
-            new IntVector3(1, 0, 0),
-            new IntVector3(2, 0, 0),
-            new IntVector3(3, 0, 0) });
+        p.type = PuzzlePieceTypes.IBeam;
         pieces.Add(p);
 
         p = Instantiate(puzzlePiecePrefab);
         p.transform.SetParent(transform, false);
-        p.Initialize(Color.yellow, new IntVector3[4] {
-            new IntVector3(0, 1, 0),
-            new IntVector3(1, 1, 0),
-            new IntVector3(1, 0, 0),
-            new IntVector3(0, 0, 0) });
+        p.type = PuzzlePieceTypes.Box;
         pieces.Add(p);
 
         p = Instantiate(puzzlePiecePrefab);
         p.transform.SetParent(transform, false);
-        p.Initialize(Color.green, new IntVector3[4] {
-            new IntVector3(0, 0, 0),
-            new IntVector3(1, 0, 0),
-            new IntVector3(1, 0, 1),
-            new IntVector3(1, 1, 0) });
+        p.type = PuzzlePieceTypes.Axis;
         pieces.Add(p);
 
         p = Instantiate(puzzlePiecePrefab);
         p.transform.SetParent(transform, false);
-        p.Initialize(Color.blue, new IntVector3[4] {
-            new IntVector3(0, 0, 0),
-            new IntVector3(1, 0, 0),
-            new IntVector3(2, 0, 0),
-            new IntVector3(2, 1, 0) });
+        p.type = PuzzlePieceTypes.L;
         pieces.Add(p);
 
         p = Instantiate(puzzlePiecePrefab);
         p.transform.SetParent(transform, false);
-        p.Initialize(Color.black, new IntVector3[4] {
-            new IntVector3(0, 1, 0),
-            new IntVector3(1, 1, 0),
-            new IntVector3(2, 1, 0),
-            new IntVector3(1, 0, 0) });
+        p.type = PuzzlePieceTypes.Bump;
         pieces.Add(p);
 
         p = Instantiate(puzzlePiecePrefab);
         p.transform.SetParent(transform, false);
-        p.Initialize(Color.red, new IntVector3[4] {
-            new IntVector3(1, 0, 0),
-            new IntVector3(2, 0, 0),
-            new IntVector3(0, 1, 0),
-            new IntVector3(1, 1, 0) });
+        p.type = PuzzlePieceTypes.S;
         pieces.Add(p);
 
         p = Instantiate(puzzlePiecePrefab);
         p.transform.SetParent(transform, false);
-        p.Initialize(Color.magenta, new IntVector3[4] {
-            new IntVector3(0, 0, 0),
-            new IntVector3(1, 0, 0),
-            new IntVector3(1, 1, 0),
-            new IntVector3(1, 1, 1) });
+        p.type = PuzzlePieceTypes.Helix;
         pieces.Add(p);
 
         p = Instantiate(puzzlePiecePrefab);
         p.transform.SetParent(transform, false);
-        p.Initialize(Color.gray, new IntVector3[4] {
-            new IntVector3(0, 0, 0),
-            new IntVector3(0, 0, 1),
-            new IntVector3(1, 0, 0),
-            new IntVector3(1, 1, 0) });
+        p.type = PuzzlePieceTypes.ReverseHelix;
         pieces.Add(p);
 
         return pieces;

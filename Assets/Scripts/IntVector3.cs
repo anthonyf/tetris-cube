@@ -24,11 +24,11 @@ public class IntVector3 {
 
     public const int PUZZLE_SIZE = 4;
     static IntVector3[][,,] rotationTables = {
-        MakeRotationTable(v => new IntVector3(PUZZLE_SIZE-1 - v.y, v.x, v.z)),
-        MakeRotationTable(v => new IntVector3(v.y, PUZZLE_SIZE-1 - v.x, v.z)),
-        MakeRotationTable(v => new IntVector3(PUZZLE_SIZE-1 - v.z, v.y, v.x)),
-        MakeRotationTable(v => new IntVector3(v.x, PUZZLE_SIZE-1 - v.z, v.y)),
-        MakeRotationTable(v => new IntVector3(v.x, v.z, PUZZLE_SIZE-1 - v.y))};
+        MakeRotationTable(v => new IntVector3((PUZZLE_SIZE-1) - v.y, v.x, v.z)),
+        MakeRotationTable(v => new IntVector3(v.y, (PUZZLE_SIZE-1) - v.x, v.z)),
+        MakeRotationTable(v => new IntVector3((PUZZLE_SIZE-1) - v.z, v.y, v.x)),
+        MakeRotationTable(v => new IntVector3(v.x, (PUZZLE_SIZE-1) - v.z, v.y)),
+        MakeRotationTable(v => new IntVector3(v.x, v.z, (PUZZLE_SIZE-1) - v.y))};
 
     internal Vector3 ToVector3()
     {
@@ -51,13 +51,13 @@ public class IntVector3 {
         return table;
     }
 
-    IntVector3 Rotate(Axis axis)
+    public IntVector3 Rotate(Axis axis)
     {
         var v = rotationTables[(int)axis][z, y, x];
-        return new IntVector3(v.x, v.y, v.x);
+        return new IntVector3(v.x, v.y, v.z);
     }
 
-    IntVector3 Move(IntVector3 offset)
+    public IntVector3 Move(IntVector3 offset)
     {
         return new IntVector3(offset.x + x, offset.y + y, offset.z + z);
     }
