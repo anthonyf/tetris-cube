@@ -14,11 +14,6 @@ public class Block : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         _meshRenderer.material.color = color;
-        transform.localPosition = position.toVector3();
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
+        transform.localPosition = position.ToVector3();
 	}
 }
