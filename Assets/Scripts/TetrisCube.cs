@@ -87,6 +87,8 @@ public class TetrisCube : MonoBehaviour {
         return pieces;
     }
 
+    float moveSpeed = .0f;
+
     IEnumerator Solve(IEnumerable<PuzzlePiece> unplacedPieces, IEnumerable<PuzzlePiece> placedPieces, PuzzleGrid grid, Action<IEnumerable<PuzzlePiece>> solvedFun)
     {
         if(unplacedPieces.Count() == 0)
@@ -96,10 +98,13 @@ public class TetrisCube : MonoBehaviour {
         }
 
         var piece = unplacedPieces.First();
+        var prevRotation = piece.transform.localEulerAngles;
+        var prevPosition = piece.transform.localPosition;
         var savedRotation = piece.transform.localEulerAngles;
         var savedPosition = piece.transform.localPosition;
         foreach (var validPosition in piece.ValidBoardPositions())
         {
+
             // place piece
             piece.transform.SetParent(CubeContainer.transform, true);
             piece.transform.localEulerAngles = validPosition.eulerAngle;
@@ -107,15 +112,40 @@ public class TetrisCube : MonoBehaviour {
             if (grid.IsValidMove(piece))
             {
                 grid.AddPiece(piece);
+
+                yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, validPosition.position, validPosition.eulerAngle, moveSpeed));
                 yield return StartCoroutine(Solve(unplacedPieces.Skip(1), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
+                prevRotation = validPosition.eulerAngle;
+                prevPosition = validPosition.position;
                 grid.RemovePiece(piece);
             }
         }
         piece.transform.SetParent(PiecesContainer.transform, true);
-        piece.transform.localPosition = savedPosition;
-        piece.transform.localEulerAngles = savedRotation;
+        yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, savedPosition, savedRotation, moveSpeed));
 
         yield return null;
+    }
+
+    IEnumerator MovePiece(PuzzlePiece piece, Vector3 fromPosition, Vector3 fromRotation, Vector3 toPosition, Vector3 toRotation, float speed)
+    {
+        if (speed == 0f)
+        {
+            piece.transform.localPosition = toPosition;
+            piece.transform.localEulerAngles = toRotation;
+            yield break;
+        }
+
+        var elapsedTime = 0f;
+
+        while(speed > elapsedTime)
+        {
+            piece.transform.localPosition = Vector3.Lerp(fromPosition, toPosition, elapsedTime / speed);
+            piece.transform.localEulerAngles = Vector3.Lerp(fromRotation, toRotation, elapsedTime / speed);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        piece.transform.localPosition = toPosition;
+        piece.transform.localEulerAngles = toRotation;
     }
 
     bool running = false;
