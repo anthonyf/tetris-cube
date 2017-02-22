@@ -61,6 +61,14 @@ public class TetrisCube : MonoBehaviour {
         PlacePiecesInACircle();
     }
 
+    public void Restart()
+    {
+        if(puzzlePieces != null)
+        {
+
+        }
+    }
+
     private void PlacePiecesInACircle()
     {
         for(int i = 0; i < puzzlePieces.Count; i++)
@@ -110,30 +118,43 @@ public class TetrisCube : MonoBehaviour {
         }
 
         var piece = unplacedPieces.First();
-        var savedRotation = piece.transform.localEulerAngles;
-        var savedPosition = piece.transform.localPosition;
+        var savedOriginalRotation = piece.transform.localEulerAngles;
+        var savedOriginalPosition = piece.transform.localPosition;
         piece.transform.SetParent(CubeContainer.transform, true);
         var prevRotation = piece.transform.localEulerAngles;
         var prevPosition = piece.transform.localPosition;
         foreach (var validPosition in piece.ValidBoardPositions())
         {
+            // save piece position before trying
+            var savedBeforeTryRotation = piece.transform.localEulerAngles;
+            var savedBeforeTryPosition = piece.transform.localPosition;
 
-            // place piece
+            // try to place piece
             piece.transform.localEulerAngles = validPosition.eulerAngle;
             piece.transform.localPosition = validPosition.position;
             if (grid.IsValidMove(piece))
             {
                 grid.AddPiece(piece);
 
-                yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, validPosition.position, validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
+                // animate movement only when we found a valid move
+                yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, validPosition.position, 
+                    validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
                 yield return StartCoroutine(Solve(unplacedPieces.Skip(1), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
                 prevRotation = validPosition.eulerAngle;
                 prevPosition = validPosition.position;
                 grid.RemovePiece(piece);
+            } else
+            {
+                // placing failed, put piece back where it was
+                piece.transform.localEulerAngles = savedBeforeTryRotation;
+                piece.transform.localPosition = savedBeforeTryPosition;
             }
         }
+
+        // Done trying to fit this piece, put piece back in the ring where it came from
         piece.transform.SetParent(PiecesContainer.transform, true);
-        yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, savedPosition, savedRotation, moveSpeeds[moveSpeedIndex]));
+        yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition, piece.transform.localEulerAngles, 
+            savedOriginalPosition, savedOriginalRotation, moveSpeeds[moveSpeedIndex]));
 
         yield return null;
     }
