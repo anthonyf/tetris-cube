@@ -3,9 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
+using UnityEngine.UI;
 
 public class TetrisCube : MonoBehaviour {
+
+    [SerializeField]
+    Text startButtonText;
 
     [SerializeField]
     PuzzlePiece puzzlePiecePrefab;
@@ -16,22 +19,39 @@ public class TetrisCube : MonoBehaviour {
     [SerializeField]
     Transform CubeContainer;
 
+    [SerializeField]
+    Transform OuterCubeContainer;
+
     public List<PuzzlePiece> puzzlePieces;
 
+
+    bool isDragging = false;
+    Vector3 prevMousePosition = Vector3.zero;
+    void Update()
+    {
+        if(Input.GetMouseButton(0))
+        {
+            if (prevMousePosition != null)
+            {
+                var delta = Input.mousePosition - prevMousePosition;
+                OuterCubeContainer.transform.localEulerAngles += (delta * .1f);
+            }
+            prevMousePosition = Input.mousePosition;
+            
+        } else
+        {
+            isDragging = false;
+            prevMousePosition = Vector3.zero;
+        }
+    }
+
     // Use this for initialization
-    IEnumerator Start () {
+    void Start () {
         puzzlePieces = new List<PuzzlePiece>();
         puzzlePieces.AddRange(SpawnAllPuzzlePieces());
         puzzlePieces.AddRange(SpawnAllPuzzlePieces());
 
         PlacePiecesInACircle();
-
-        yield return null; yield return null;
-        StartCoroutine(Solve(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
-        {
-            Debug.Log("Solved!");
-            StopAllCoroutines();
-        }));
     }
 
     private void PlacePiecesInACircle()
@@ -99,6 +119,32 @@ public class TetrisCube : MonoBehaviour {
         piece.transform.localEulerAngles = savedRotation;
 
         yield return null;
+    }
+
+    bool running = false;
+
+    public void StartButtonClicked()
+    {
+        if(running)
+        {
+            running = false;
+            StopAllCoroutines();
+        }
+        else
+        {
+            running = true;
+            startButtonText.text = "Stop";
+            StartCoroutine(Solve(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
+            {
+                Debug.Log("Solved!");
+                StopAllCoroutines();
+            }));
+        }
+    }
+
+    public void StepButtonClicked()
+    {
+
     }
 }
 

@@ -126,7 +126,7 @@ public class PuzzlePiece : MonoBehaviour {
             List<IntVector3> locations = new List<IntVector3>();
             foreach(var block in blocks)
             {
-                var t = block.transform.position;
+                var t = transform.parent.InverseTransformPoint(block.transform.position);
                 locations.Add(new IntVector3(
                     (int)Math.Round(t.x), 
                     (int)Math.Round(t.y), 
