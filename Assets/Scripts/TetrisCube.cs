@@ -34,8 +34,15 @@ public class TetrisCube : MonoBehaviour {
     {
         if(Input.GetMouseButton(0))
         {
-            var rotX = Input.GetAxis("Mouse X") * rotationSpeed;
-            var rotY = Input.GetAxis("Mouse Y") * rotationSpeed;
+            float pointerX = Input.GetAxis("Mouse X");
+            float pointerY = Input.GetAxis("Mouse Y");
+            if (Input.touchCount > 0)
+            {
+                pointerX = Input.touches[0].deltaPosition.x * .05f;
+                pointerY = Input.touches[0].deltaPosition.y * .05f;
+            }
+            var rotX = pointerX * rotationSpeed;
+            var rotY = pointerY * rotationSpeed;
             OuterCubeContainer.transform.Rotate(Vector3.up, -rotX, Space.World);
             OuterCubeContainer.transform.Rotate(Vector3.right, rotY, Space.World);
             
@@ -103,15 +110,15 @@ public class TetrisCube : MonoBehaviour {
         }
 
         var piece = unplacedPieces.First();
-        var prevRotation = piece.transform.localEulerAngles;
-        var prevPosition = piece.transform.localPosition;
         var savedRotation = piece.transform.localEulerAngles;
         var savedPosition = piece.transform.localPosition;
+        piece.transform.SetParent(CubeContainer.transform, true);
+        var prevRotation = piece.transform.localEulerAngles;
+        var prevPosition = piece.transform.localPosition;
         foreach (var validPosition in piece.ValidBoardPositions())
         {
 
             // place piece
-            piece.transform.SetParent(CubeContainer.transform, true);
             piece.transform.localEulerAngles = validPosition.eulerAngle;
             piece.transform.localPosition = validPosition.position;
             if (grid.IsValidMove(piece))
@@ -159,6 +166,7 @@ public class TetrisCube : MonoBehaviour {
     {
         if(running)
         {
+            startButtonText.text = "Start";
             running = false;
             StopAllCoroutines();
         }
@@ -183,6 +191,11 @@ public class TetrisCube : MonoBehaviour {
     {
         moveSpeedIndex = (moveSpeedIndex + 1) % moveSpeeds.Count();
         speedButtonText.text = moveSpeedText[moveSpeedIndex];
+    }
+
+    public void QuitButtonClicked()
+    {
+        Application.Quit();
     }
 }
 
