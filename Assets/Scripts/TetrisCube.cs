@@ -30,6 +30,9 @@ public class TetrisCube : MonoBehaviour {
 
     bool isDragging = false;
     float rotationSpeed = 8f;
+
+    bool running = false;
+
     void Update()
     {
         if(Input.GetMouseButton(0))
@@ -54,19 +57,25 @@ public class TetrisCube : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        puzzlePieces = new List<PuzzlePiece>();
-        puzzlePieces.AddRange(SpawnAllPuzzlePieces());
-        puzzlePieces.AddRange(SpawnAllPuzzlePieces());
-
-        PlacePiecesInACircle();
+        Restart();
     }
 
     public void Restart()
     {
+        startButtonText.text = "Start";
+        if (running)
+        {
+            StopAllCoroutines();
+            running = false;
+        }
         if(puzzlePieces != null)
         {
-
+            puzzlePieces.ForEach(p => Destroy(p.gameObject));
         }
+        puzzlePieces = new List<PuzzlePiece>();
+        puzzlePieces.AddRange(SpawnAllPuzzlePieces());
+
+        PlacePiecesInACircle();
     }
 
     private void PlacePiecesInACircle()
@@ -92,6 +101,15 @@ public class TetrisCube : MonoBehaviour {
     List<PuzzlePiece> SpawnAllPuzzlePieces()
     {
         var pieces = new List<PuzzlePiece>();
+
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Axis));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Helix));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.ReverseHelix));
 
         pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
         pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
@@ -181,15 +199,11 @@ public class TetrisCube : MonoBehaviour {
         piece.transform.localEulerAngles = toRotation;
     }
 
-    bool running = false;
-
     public void StartButtonClicked()
     {
         if(running)
         {
-            startButtonText.text = "Start";
-            running = false;
-            StopAllCoroutines();
+            Restart();
         }
         else
         {
