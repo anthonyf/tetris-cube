@@ -26,18 +26,26 @@ public class PuzzlePiece : MonoBehaviour {
 
     List<Block> blocks = new List<Block>();
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start() {
         MakePuzzlePiece(type);
-	}
-	
+    }
+
     private void Initialize(Color color, IntVector3[] blockPositions)
     {
-        foreach(var v in blockPositions)
+        var minV = new IntVector3(4, 4, 4);
+        var maxV = new IntVector3(0, 0, 0);
+        foreach (var v in blockPositions)
+        {
+            minV = new IntVector3(Mathf.Min(minV.x, v.x), Mathf.Min(minV.y, v.y), Mathf.Min(minV.z, v.z));
+            maxV = new IntVector3(Mathf.Max(maxV.x, v.x), Mathf.Max(maxV.y, v.y), Mathf.Max(maxV.z, v.z));
+        }
+
+        foreach (var v in blockPositions)
         {
             var b = Instantiate(blockPrefab);
             b.transform.SetParent(transform, false);
-            b.SetPosition(v);
+            b.SetPosition(new IntVector3(v.x - (maxV.x - minV.x) / 2, v.y - (maxV.y - minV.y) / 2, v.z - (maxV.z - minV.z) / 2));
             b.color = color;
             blocks.Add(b);
         }
@@ -108,44 +116,103 @@ public class PuzzlePiece : MonoBehaviour {
         }
     }
 
-    // Move blocks down as close to zero on all 3 axis
-    private void Normalize()
-    {
-        int minX = 4;
-        int minY = 4;
-        int minZ = 4;
-        blocks.ForEach(b =>
-        {
-            minX = Math.Min(b.position.x, minX);
-            minY = Math.Min(b.position.y, minY);
-            minZ = Math.Min(b.position.z, minZ);
-        });
-        blocks.ForEach(b => b.SetPosition(new IntVector3(
-            b.position.x - minX,
-            b.position.y - minY,
-            b.position.z - minZ)));
-    }
-
     public void Rotate(Axis axis)
     {
-        blocks.ForEach(b => b.Rotate(axis));
-        Normalize();
-        StartCoroutine(DoRotation(axis));
+        StartCoroutine(DoRotation(axis, .5f));
     }
 
-    IEnumerator DoRotation(Axis axis)
+    public List<IntVector3> BlockLocations { get
+        {
+            List<IntVector3> locations = new List<IntVector3>();
+            foreach(var block in blocks)
+            {
+                locations.Add(new IntVector3(
+                    (int)block.transform.position.x, 
+                    (int)block.transform.position.y, 
+                    (int)block.transform.position.z));
+            }
+            return locations;
+        }
+    }
+
+    int doRotationCounter = 0;
+    IEnumerator DoRotation(Axis axis, float speed)
     {
+        while (doRotationCounter > 0) { yield return null; }
+        doRotationCounter++;
         var startRotation = transform.localEulerAngles;
         var endRotation = new Vector3(
             startRotation.x + IntVector3.AxisEulerAngles[(int)axis].x,
             startRotation.y + IntVector3.AxisEulerAngles[(int)axis].y,
             startRotation.z + IntVector3.AxisEulerAngles[(int)axis].z);
         var startPosition = transform.localPosition;
-        yield return null;
+        var elapsedTime = 0f;
+        var time = speed;
+        while (time > elapsedTime)
+        {
+            transform.localEulerAngles = Vector3.Lerp(startRotation, endRotation, elapsedTime / time);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.localEulerAngles = endRotation;
+        doRotationCounter--;
+        foreach (var block in BlockLocations) {
+            Debug.Log("block location x=" + block.x + " y=" + block.y + " z=" + block.z);
+        }
     }
 
-    public void Move(IntVector3 offset)
+    public class PuzzlePiecePosition
     {
-        blocks.ForEach(b => b.Move(offset));
+        public Vector3 position;
+        public Vector3 eulerAngle;
+    }
+
+    List<PuzzlePiecePosition> _cachedValidBoardPositions = null;
+
+    public List<PuzzlePiecePosition> ValidBoardPositions()
+    {
+        if(_cachedValidBoardPositions != null)
+        {
+            return _cachedValidBoardPositions;
+        }
+
+        List<PuzzlePiecePosition> validPostions = new List<PuzzlePiecePosition>();
+        PuzzleGrid grid = new PuzzleGrid();
+
+        var savedLocalEulerAngles = transform.localEulerAngles;
+        var savedLocalPosition = transform.localPosition;
+
+        // for all 24 rotations rotation
+        foreach (var rotation in TwentyFourRotations.rotations)
+        {
+            transform.localEulerAngles = rotation;
+            // for each x position
+            for (int x = -(4 - 1); x < (4 + (4 - 1)); x++)
+            {
+                // for each y position
+                for (int y = -(4 - 1); y < (4 + (4 - 1)); y++)
+                {
+                    // for each z position
+                    for (int z = -(4 - 1); z < (4 + (4 - 1)); z++)
+                    {
+                        // place piece
+                        transform.localPosition = new Vector3(x, y, z);
+                        if (grid.IsValidBoardPosition(this))
+                        {
+                            validPostions.Add(new PuzzlePiecePosition() {
+                                eulerAngle = transform.localEulerAngles,
+                                position = transform.localPosition
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        transform.localPosition = savedLocalPosition;
+        transform.localEulerAngles = savedLocalEulerAngles;
+
+        _cachedValidBoardPositions = validPostions;
+        return validPostions;
     }
 }

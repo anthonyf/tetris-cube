@@ -18,19 +18,9 @@ public class Block : MonoBehaviour {
         transform.localPosition = position.ToVector3();
 	}
 
-    public void Rotate(Axis axis)
-    {
-        SetPosition(position.Rotate(axis));
-    }
-
-    public void Move(IntVector3 offset)
-    {
-        SetPosition(position.Move(offset));
-    }
-
     public void SetPosition(IntVector3 position)
     {
         this.position = position;
-        //transform.localPosition = position.ToVector3();
+        transform.localPosition = position.ToVector3();
     }
 }

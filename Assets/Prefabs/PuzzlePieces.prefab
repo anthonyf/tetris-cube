@@ -20,7 +20,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4904716525023556}
   - component: {fileID: 114649626977604534}
-  - component: {fileID: 114915688651154298}
   m_Layer: 0
   m_Name: PuzzlePieces
   m_TagString: Untagged
@@ -55,14 +54,3 @@ MonoBehaviour:
   puzzlePiecePrefab: {fileID: 114742848169954712, guid: f336ba6eecfce094daddbc8f23094c81,
     type: 2}
   puzzlePieces: []
---- !u!114 &114915688651154298
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1583482272391252}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9378150062f5c044484bde9a94290e43, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
