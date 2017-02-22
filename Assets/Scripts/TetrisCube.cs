@@ -10,6 +10,12 @@ public class TetrisCube : MonoBehaviour {
     [SerializeField]
     PuzzlePiece puzzlePiecePrefab;
 
+    [SerializeField]
+    Transform PiecesContainer;
+
+    [SerializeField]
+    Transform CubeContainer;
+
     public List<PuzzlePiece> puzzlePieces;
 
     // Use this for initialization
@@ -40,49 +46,26 @@ public class TetrisCube : MonoBehaviour {
         }
     }
 
+    PuzzlePiece SpawnPuzzlePiece(PuzzlePieceTypes type)
+    {
+        var p = Instantiate(puzzlePiecePrefab);
+        p.transform.SetParent(PiecesContainer.transform, false);
+        p.type = type;
+        return p;
+    }
+
     List<PuzzlePiece> SpawnAllPuzzlePieces()
     {
         var pieces = new List<PuzzlePiece>();
 
-        var p = Instantiate(puzzlePiecePrefab);
-        p.transform.SetParent(transform, false);
-        p.type = PuzzlePieceTypes.IBeam;
-        pieces.Add(p);
-
-        p = Instantiate(puzzlePiecePrefab);
-        p.transform.SetParent(transform, false);
-        p.type = PuzzlePieceTypes.Box;
-        pieces.Add(p);
-
-        p = Instantiate(puzzlePiecePrefab);
-        p.transform.SetParent(transform, false);
-        p.type = PuzzlePieceTypes.Axis;
-        pieces.Add(p);
-
-        p = Instantiate(puzzlePiecePrefab);
-        p.transform.SetParent(transform, false);
-        p.type = PuzzlePieceTypes.L;
-        pieces.Add(p);
-
-        p = Instantiate(puzzlePiecePrefab);
-        p.transform.SetParent(transform, false);
-        p.type = PuzzlePieceTypes.Bump;
-        pieces.Add(p);
-
-        p = Instantiate(puzzlePiecePrefab);
-        p.transform.SetParent(transform, false);
-        p.type = PuzzlePieceTypes.S;
-        pieces.Add(p);
-
-        p = Instantiate(puzzlePiecePrefab);
-        p.transform.SetParent(transform, false);
-        p.type = PuzzlePieceTypes.Helix;
-        pieces.Add(p);
-
-        p = Instantiate(puzzlePiecePrefab);
-        p.transform.SetParent(transform, false);
-        p.type = PuzzlePieceTypes.ReverseHelix;
-        pieces.Add(p);
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Axis));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Helix));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.ReverseHelix));
 
         return pieces;
     }
@@ -101,6 +84,7 @@ public class TetrisCube : MonoBehaviour {
         foreach (var validPosition in piece.ValidBoardPositions())
         {
             // place piece
+            piece.transform.SetParent(CubeContainer.transform, true);
             piece.transform.localEulerAngles = validPosition.eulerAngle;
             piece.transform.localPosition = validPosition.position;
             if (grid.IsValidMove(piece))
@@ -110,6 +94,7 @@ public class TetrisCube : MonoBehaviour {
                 grid.RemovePiece(piece);
             }
         }
+        piece.transform.SetParent(PiecesContainer.transform, true);
         piece.transform.localPosition = savedPosition;
         piece.transform.localEulerAngles = savedRotation;
 
