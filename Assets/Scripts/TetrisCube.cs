@@ -11,6 +11,9 @@ public class TetrisCube : MonoBehaviour {
     Text startButtonText;
 
     [SerializeField]
+    Text speedButtonText;
+
+    [SerializeField]
     PuzzlePiece puzzlePiecePrefab;
 
     [SerializeField]
@@ -87,7 +90,9 @@ public class TetrisCube : MonoBehaviour {
         return pieces;
     }
 
-    float moveSpeed = .0f;
+    int moveSpeedIndex = 0;
+    float[] moveSpeeds = { 1f, .5f, .25f, .125f, 0f };
+    string[] moveSpeedText = { "1x", "2x", "3x", "4x", "InfinityX" };
 
     IEnumerator Solve(IEnumerable<PuzzlePiece> unplacedPieces, IEnumerable<PuzzlePiece> placedPieces, PuzzleGrid grid, Action<IEnumerable<PuzzlePiece>> solvedFun)
     {
@@ -113,7 +118,7 @@ public class TetrisCube : MonoBehaviour {
             {
                 grid.AddPiece(piece);
 
-                yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, validPosition.position, validPosition.eulerAngle, moveSpeed));
+                yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, validPosition.position, validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
                 yield return StartCoroutine(Solve(unplacedPieces.Skip(1), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
                 prevRotation = validPosition.eulerAngle;
                 prevPosition = validPosition.position;
@@ -121,7 +126,7 @@ public class TetrisCube : MonoBehaviour {
             }
         }
         piece.transform.SetParent(PiecesContainer.transform, true);
-        yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, savedPosition, savedRotation, moveSpeed));
+        yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, savedPosition, savedRotation, moveSpeeds[moveSpeedIndex]));
 
         yield return null;
     }
@@ -172,6 +177,12 @@ public class TetrisCube : MonoBehaviour {
     public void StepButtonClicked()
     {
 
+    }
+
+    public void SpeedButtonClicked()
+    {
+        moveSpeedIndex = (moveSpeedIndex + 1) % moveSpeeds.Count();
+        speedButtonText.text = moveSpeedText[moveSpeedIndex];
     }
 }
 
