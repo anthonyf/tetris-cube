@@ -26,22 +26,19 @@ public class TetrisCube : MonoBehaviour {
 
 
     bool isDragging = false;
-    Vector3 prevMousePosition = Vector3.zero;
+    float rotationSpeed = 8f;
     void Update()
     {
         if(Input.GetMouseButton(0))
         {
-            if (prevMousePosition != null)
-            {
-                var delta = Input.mousePosition - prevMousePosition;
-                OuterCubeContainer.transform.localEulerAngles += (delta * .1f);
-            }
-            prevMousePosition = Input.mousePosition;
+            var rotX = Input.GetAxis("Mouse X") * rotationSpeed;
+            var rotY = Input.GetAxis("Mouse Y") * rotationSpeed;
+            OuterCubeContainer.transform.Rotate(Vector3.up, -rotX, Space.World);
+            OuterCubeContainer.transform.Rotate(Vector3.right, rotY, Space.World);
             
         } else
         {
             isDragging = false;
-            prevMousePosition = Vector3.zero;
         }
     }
 
