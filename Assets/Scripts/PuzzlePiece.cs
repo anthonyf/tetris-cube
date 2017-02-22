@@ -91,7 +91,7 @@ public class PuzzlePiece : MonoBehaviour {
                     new IntVector3(1, 1, 0) });
                 break;
             case PuzzlePieceTypes.Bump:
-                Initialize(Color.black, new IntVector3[4] {
+                Initialize(Color.white, new IntVector3[4] {
                     new IntVector3(0, 1, 0),
                     new IntVector3(1, 1, 0),
                     new IntVector3(2, 1, 0),
