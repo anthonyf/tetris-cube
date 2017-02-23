@@ -35,4 +35,18 @@ public class IntVector3 {
     {
         return new Vector3(x, y, z);
     }
+
+    public override bool Equals(object obj)
+    {
+        if (obj == null || GetType() != obj.GetType())
+            return false;
+
+        IntVector3 v = (IntVector3)obj;
+        return (x == v.x) && (y == v.y) && (z == v.z);
+    }
+
+    public override int GetHashCode()
+    {
+        return x.GetHashCode() ^ y.GetHashCode() ^ z.GetHashCode();
+    }
 }

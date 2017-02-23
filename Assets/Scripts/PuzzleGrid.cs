@@ -22,8 +22,7 @@ class PuzzleGrid
     {
         return IsValidBoardPosition(piece) && 
                piece.BlockLocations.TrueForAll(b =>
-                   grid[b.z, b.y, b.x] == null) &&
-               !DoUnfillableHolesExist();
+                   grid[b.z, b.y, b.x] == null);
     }
 
     static IntVector3[] offsets = new IntVector3[] {
@@ -35,23 +34,67 @@ class PuzzleGrid
         new IntVector3(0, 0, +1),
     };
 
-    bool DoUnfillableHolesExist()
+    IEnumerable<IntVector3> AdjacentCells(IntVector3 cell)
     {
+        return offsets.Select(o => new IntVector3(
+            o.x + cell.x, 
+            o.y + cell.y, 
+            o.z + cell.z))
+            .Where(c => 
+                c.x >= 0 && 
+                c.y >= 0 && 
+                c.z >= 0 && 
+                c.x < 4 && 
+                c.y < 4 && 
+                c.z < 4);
+    }
+
+    /// <summary>
+    /// Determines if a puzzle is in a state where it is unsolveable.  A puzzle is
+    /// unsolvable if any contiguous empty spaces are not divisible by 4
+    /// </summary>
+    /// <returns></returns>
+    public bool IsPuzzleUnsolveable()
+    {
+        var sets = new HashSet<HashSet<IntVector3>>();
         for (int x = 0; x < 4; x++)
         {
             for (int y = 0; y < 4; y++)
             {
                 for (int z = 0; z < 4; z++)
                 {
-                    if(grid[z, y, x] == null && offsets.All(o => 
-                       x + o.x >= 0 && x + o.x < 4 &&
-                       y + o.y >= 0 && y + o.y < 4 &&
-                       z + o.z >= 0 && z + o.z < 4 &&
-                       grid[z + o.z, y + o.y, x + o.x] != null))
-                    {
-                        return true;
+                    var currentCell = new IntVector3(x, y, z);
+                    if (grid[currentCell.z, currentCell.y, currentCell.x] == null) {
+                        var neighborFoundInSet = false;
+                        foreach (var neighborCell in AdjacentCells(currentCell))
+                        {
+                            if (grid[neighborCell.z, neighborCell.y, neighborCell.x] == null)
+                            {
+                                foreach (var set in sets)
+                                {
+                                    if (set.Contains(neighborCell))
+                                    {
+                                        set.Add(currentCell);
+                                        neighborFoundInSet = true;
+                                    }
+                                }
+                            }
+                        }
+                        if (!neighborFoundInSet)
+                        {
+                            var newSet = new HashSet<IntVector3>();
+                            newSet.Add(currentCell);
+                            sets.Add(newSet);
+                        }
                     }
                 }
+            }
+        }
+        foreach(var set in sets)
+        {
+            if(set.Count % 4 != 0)
+            {
+                return true;
             }
         }
         return false;
