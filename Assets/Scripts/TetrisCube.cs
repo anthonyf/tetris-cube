@@ -103,22 +103,45 @@ public class TetrisCube : MonoBehaviour {
         var pieces = new List<PuzzlePiece>();
 
         pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Axis));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Helix));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.ReverseHelix));
-
         pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
+
         pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
+
         pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Axis));
+
         pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
+
         pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
+
         pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Helix));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.ReverseHelix));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
+        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
+
+
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Axis));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Helix));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.ReverseHelix));
+
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Axis));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Helix));
+        //pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.ReverseHelix));
 
         return pieces;
     }
