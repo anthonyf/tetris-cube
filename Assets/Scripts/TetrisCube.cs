@@ -211,9 +211,9 @@ public class TetrisCube : MonoBehaviour {
             piece.transform.localEulerAngles = validPosition.eulerAngle;
             piece.transform.localPosition = validPosition.position;
             bool piecePlaced = false;
-            if (grid.IsValidMove(piece))
+            if (grid.IsValidMove(validPosition.blockPositions))
             {
-                grid.AddPiece(piece);
+                grid.AddPiece(validPosition.blockPositions);
                 if(!grid.IsPuzzleUnsolveable())
                 {
                     piecePlaced = true;
@@ -224,7 +224,7 @@ public class TetrisCube : MonoBehaviour {
                     prevRotation = validPosition.eulerAngle;
                     prevPosition = validPosition.position;
                 }
-                grid.RemovePiece(piece);
+                grid.RemovePiece(validPosition.blockPositions);
             }
 
             if(!piecePlaced)

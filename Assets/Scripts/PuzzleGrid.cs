@@ -5,11 +5,11 @@ using System.Text;
 
 class PuzzleGrid
 {
-    PuzzlePiece[,,] grid = new PuzzlePiece[4,4,4];
+    bool[,,] grid = new bool[4,4,4];
 
-    public bool IsValidBoardPosition(PuzzlePiece piece)
+    public bool IsValidBoardPosition(List<IntVector3> blocks)
     {
-        return piece.BlockLocations.ToList().TrueForAll(b =>
+        return blocks.TrueForAll(b =>
             b.x >= 0 &&
             b.y >= 0 &&
             b.z >= 0 &&
@@ -18,11 +18,11 @@ class PuzzleGrid
             b.z < 4);
     }
 
-    public bool IsValidMove(PuzzlePiece piece)
+    public bool IsValidMove(List<IntVector3> blocks)
     {
-        return IsValidBoardPosition(piece) && 
-               piece.BlockLocations.ToList().TrueForAll(b =>
-                   grid[b.z, b.y, b.x] == null);
+        return IsValidBoardPosition(blocks) && 
+               blocks.ToList().TrueForAll(b =>
+                   grid[b.z, b.y, b.x] == false);
     }
 
     static IntVector3[] offsets = new IntVector3[] {
@@ -59,12 +59,12 @@ class PuzzleGrid
                 for (int z = 0; z < 4; z++)
                 {
                     var currentCell = new IntVector3(x, y, z);
-                    if (grid[currentCell.z, currentCell.y, currentCell.x] == null)
+                    if (grid[currentCell.z, currentCell.y, currentCell.x] == false)
                     {
                         var neighborFoundInSet = false;
                         foreach (var neighborCell in AdjacentCells(currentCell))
                         {
-                            if (grid[neighborCell.z, neighborCell.y, neighborCell.x] == null)
+                            if (grid[neighborCell.z, neighborCell.y, neighborCell.x] == false)
                             {
                                 foreach (var set in holes)
                                 {
@@ -107,13 +107,13 @@ class PuzzleGrid
         return false;
     }
 
-    public void AddPiece(PuzzlePiece piece)
+    public void AddPiece(List<IntVector3> blocks)
     {
-        piece.BlockLocations.ToList().ForEach(b => grid[b.z, b.y, b.x] = piece);
+        blocks.ForEach(b => grid[b.z, b.y, b.x] = true);
     }    
 
-    public void RemovePiece(PuzzlePiece piece)
+    public void RemovePiece(List<IntVector3> blocks)
     {
-        piece.BlockLocations.ToList().ForEach(b => grid[b.z, b.y, b.x] = null);
+        blocks.ForEach(b => grid[b.z, b.y, b.x] = false);
     }
 }
