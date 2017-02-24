@@ -209,11 +209,13 @@ public class TetrisCube : MonoBehaviour {
             // try to place piece
             piece.transform.localEulerAngles = validPosition.eulerAngle;
             piece.transform.localPosition = validPosition.position;
+            bool piecePlaced = false;
             if (grid.IsValidMove(piece))
             {
                 grid.AddPiece(piece);
                 if(!grid.IsPuzzleUnsolveable())
                 {
+                    piecePlaced = true;
                     // animate movement only when we found a valid move
                     yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, validPosition.position,
                         validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
@@ -222,7 +224,9 @@ public class TetrisCube : MonoBehaviour {
                     prevPosition = validPosition.position;
                 }
                 grid.RemovePiece(piece);
-            } else
+            }
+
+            if(!piecePlaced)
             {
                 // placing failed, put piece back where it was
                 piece.transform.localEulerAngles = savedBeforeTryRotation;

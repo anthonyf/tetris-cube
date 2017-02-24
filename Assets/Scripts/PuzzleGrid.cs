@@ -49,14 +49,9 @@ class PuzzleGrid
                 c.z < 4);
     }
 
-    /// <summary>
-    /// Determines if a puzzle is in a state where it is unsolveable.  A puzzle is
-    /// unsolvable if any contiguous empty spaces are not divisible by 4
-    /// </summary>
-    /// <returns></returns>
-    public bool IsPuzzleUnsolveable()
+    public List<HashSet<IntVector3>> FindHoles()
     {
-        var sets = new HashSet<HashSet<IntVector3>>();
+        var holes = new List<HashSet<IntVector3>>();
         for (int x = 0; x < 4; x++)
         {
             for (int y = 0; y < 4; y++)
@@ -64,13 +59,14 @@ class PuzzleGrid
                 for (int z = 0; z < 4; z++)
                 {
                     var currentCell = new IntVector3(x, y, z);
-                    if (grid[currentCell.z, currentCell.y, currentCell.x] == null) {
+                    if (grid[currentCell.z, currentCell.y, currentCell.x] == null)
+                    {
                         var neighborFoundInSet = false;
                         foreach (var neighborCell in AdjacentCells(currentCell))
                         {
                             if (grid[neighborCell.z, neighborCell.y, neighborCell.x] == null)
                             {
-                                foreach (var set in sets)
+                                foreach (var set in holes)
                                 {
                                     if (set.Contains(neighborCell))
                                     {
@@ -84,13 +80,24 @@ class PuzzleGrid
                         {
                             var newSet = new HashSet<IntVector3>();
                             newSet.Add(currentCell);
-                            sets.Add(newSet);
+                            holes.Add(newSet);
                         }
                     }
                 }
             }
         }
-        foreach(var set in sets)
+        return holes;
+    }
+
+    /// <summary>
+    /// Determines if a puzzle is in a state where it is unsolveable.  A puzzle is
+    /// unsolvable if any contiguous empty spaces (holes) are not divisible by 4.
+    /// </summary>
+    /// <returns></returns>
+    public bool IsPuzzleUnsolveable()
+    {
+        var holes = FindHoles();
+        foreach(var set in holes)
         {
             if(set.Count % 4 != 0)
             {
