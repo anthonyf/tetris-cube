@@ -121,9 +121,10 @@ public class PuzzlePiece : MonoBehaviour {
         StartCoroutine(DoRotation(axis, .5f));
     }
 
-    public List<IntVector3> BlockLocations { get
+    public HashSet<IntVector3> BlockLocations {
+        get
         {
-            List<IntVector3> locations = new List<IntVector3>();
+            HashSet<IntVector3> locations = new HashSet<IntVector3>();
             foreach(var block in blocks)
             {
                 var t = transform.parent.InverseTransformPoint(block.transform.position);
@@ -167,6 +168,7 @@ public class PuzzlePiece : MonoBehaviour {
     {
         public Vector3 position;
         public Vector3 eulerAngle;
+        public HashSet<IntVector3> blockPositions;
     }
 
     List<PuzzlePiecePosition> _cachedValidBoardPositions = null;
@@ -203,7 +205,8 @@ public class PuzzlePiece : MonoBehaviour {
                         {
                             validPostions.Add(new PuzzlePiecePosition() {
                                 eulerAngle = transform.localEulerAngles,
-                                position = transform.localPosition
+                                position = transform.localPosition,
+                                blockPositions = BlockLocations
                             });
                         }
                     }

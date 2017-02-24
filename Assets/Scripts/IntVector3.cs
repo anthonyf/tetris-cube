@@ -49,4 +49,9 @@ public class IntVector3 {
     {
         return x.GetHashCode() ^ y.GetHashCode() ^ z.GetHashCode();
     }
+
+    public static IntVector3 FromVector3(Vector3 v)
+    {
+        return new IntVector3((int)Mathf.Round(v.x), (int)Mathf.Round(v.y), (int)Mathf.Round(v.z));
+    }
 }

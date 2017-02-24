@@ -28,6 +28,10 @@ public class TetrisCube : MonoBehaviour {
     public List<PuzzlePiece> puzzlePieces;
 
 
+    int moveSpeedIndex = 4;
+    float[] moveSpeeds = { 1f, .5f, .25f, .125f, 0f };
+    string[] moveSpeedText = { "1x", "2x", "3x", "4x", "InfinityX" };
+
     bool isDragging = false;
     float rotationSpeed = 8f;
 
@@ -62,6 +66,7 @@ public class TetrisCube : MonoBehaviour {
 
     public void Restart()
     {
+        speedButtonText.text = moveSpeedText[moveSpeedIndex];
         startButtonText.text = "Start";
         if (running)
         {
@@ -74,8 +79,8 @@ public class TetrisCube : MonoBehaviour {
         }
         puzzlePieces = new List<PuzzlePiece>();
 
-        puzzlePieces.AddRange(SpawnAllPuzzlePieces());
-        //puzzlePieces.AddRange(SpawnAustinPuzzlePieces());
+        //puzzlePieces.AddRange(SpawnAllPuzzlePieces());
+        puzzlePieces.AddRange(SpawnAustinPuzzlePieces());
         //puzzlePieces.AddRange(SpawnAllIBeamPieces());
 
         PlacePiecesInACircle();
@@ -181,10 +186,6 @@ public class TetrisCube : MonoBehaviour {
 
         return pieces;
     }
-
-    int moveSpeedIndex = 0;
-    float[] moveSpeeds = { 1f, .5f, .25f, .125f, 0f };
-    string[] moveSpeedText = { "1x", "2x", "3x", "4x", "InfinityX" };
 
     IEnumerator Solve(IEnumerable<PuzzlePiece> unplacedPieces, IEnumerable<PuzzlePiece> placedPieces, PuzzleGrid grid, Action<IEnumerable<PuzzlePiece>> solvedFun)
     {

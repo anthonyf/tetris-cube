@@ -9,7 +9,7 @@ class PuzzleGrid
 
     public bool IsValidBoardPosition(PuzzlePiece piece)
     {
-        return piece.BlockLocations.TrueForAll(b =>
+        return piece.BlockLocations.ToList().TrueForAll(b =>
             b.x >= 0 &&
             b.y >= 0 &&
             b.z >= 0 &&
@@ -21,7 +21,7 @@ class PuzzleGrid
     public bool IsValidMove(PuzzlePiece piece)
     {
         return IsValidBoardPosition(piece) && 
-               piece.BlockLocations.TrueForAll(b =>
+               piece.BlockLocations.ToList().TrueForAll(b =>
                    grid[b.z, b.y, b.x] == null);
     }
 
@@ -49,7 +49,7 @@ class PuzzleGrid
                 c.z < 4);
     }
 
-    public List<HashSet<IntVector3>> FindHoles()
+    public IEnumerable<HashSet<IntVector3>> FindHoles()
     {
         var holes = new List<HashSet<IntVector3>>();
         for (int x = 0; x < 4; x++)
@@ -85,8 +85,8 @@ class PuzzleGrid
                     }
                 }
             }
-        }
-        return holes;
+        }        
+        return holes.OrderBy(h => h.Count);
     }
 
     /// <summary>
@@ -109,11 +109,11 @@ class PuzzleGrid
 
     public void AddPiece(PuzzlePiece piece)
     {
-        piece.BlockLocations.ForEach(b => grid[b.z, b.y, b.x] = piece);
+        piece.BlockLocations.ToList().ForEach(b => grid[b.z, b.y, b.x] = piece);
     }    
 
     public void RemovePiece(PuzzlePiece piece)
     {
-        piece.BlockLocations.ForEach(b => grid[b.z, b.y, b.x] = null);
+        piece.BlockLocations.ToList().ForEach(b => grid[b.z, b.y, b.x] = null);
     }
 }
