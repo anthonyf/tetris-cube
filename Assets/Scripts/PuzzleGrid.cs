@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 class PuzzleGrid
 {
@@ -66,12 +67,23 @@ class PuzzleGrid
                         {
                             if (grid[neighborCell.z, neighborCell.y, neighborCell.x] == false)
                             {
-                                foreach (var set in holes)
+                                HashSet<IntVector3> foundHole = null;
+                                foreach (var hole in holes)
                                 {
-                                    if (set.Contains(neighborCell))
+                                    if (hole.Contains(neighborCell))
                                     {
-                                        set.Add(currentCell);
-                                        neighborFoundInSet = true;
+                                        if(null == foundHole)
+                                        {
+                                            foundHole = hole;
+                                            hole.Add(currentCell);
+                                            neighborFoundInSet = true;
+                                        }
+                                        else
+                                        {
+                                            // join both groups of holes
+                                            hole.UnionWith(foundHole);
+                                            foundHole.UnionWith(hole);
+                                        }
                                     }
                                 }
                             }
@@ -85,7 +97,10 @@ class PuzzleGrid
                     }
                 }
             }
-        }        
+        }
+        // remove duplicate holes
+        holes = holes.Distinct(new IntVector3HashSetComparer()).ToList();
+        Debug.Log("hole Count = " + holes.Count);
         return holes.OrderBy(h => h.Count);
     }
 
@@ -115,5 +130,18 @@ class PuzzleGrid
     public void RemovePiece(List<IntVector3> blocks)
     {
         blocks.ForEach(b => grid[b.z, b.y, b.x] = false);
+    }
+}
+
+class IntVector3HashSetComparer : IEqualityComparer<HashSet<IntVector3>>
+{
+    public bool Equals(HashSet<IntVector3> x, HashSet<IntVector3> y)
+    {
+        return x.SetEquals(y);
+    }
+
+    public int GetHashCode(HashSet<IntVector3> obj)
+    {
+        return obj.ToList().Aggregate(0, (a, b) => a.GetHashCode() ^ b.GetHashCode());
     }
 }

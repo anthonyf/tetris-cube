@@ -187,6 +187,48 @@ public class TetrisCube : MonoBehaviour {
         return pieces;
     }
 
+    IEnumerator SolveHoles(IEnumerable<PuzzlePiece> unplacedPieces, IEnumerable<PuzzlePiece> placedPieces, PuzzleGrid grid, Action<IEnumerable<PuzzlePiece>> solvedFun)
+    {
+        var holes = grid.FindHoles();
+        if(holes.Count() == 0)
+        {
+            solvedFun(placedPieces);
+            yield break;
+        }
+        var hole = holes.First();
+        foreach (var piece in unplacedPieces)
+        {
+            var savedOriginalRotation = piece.transform.localEulerAngles;
+            var savedOriginalPosition = piece.transform.localPosition;
+            piece.transform.SetParent(CubeContainer.transform, true);
+            var prevRotation = piece.transform.localEulerAngles;
+            var prevPosition = piece.transform.localPosition;
+
+            foreach (var validPosition in piece.ValidBoardPositions())
+            {                
+                var blocks = new HashSet<IntVector3>(validPosition.blockPositions);
+                if (hole.IsSupersetOf(blocks))
+                {
+                    grid.AddPiece(validPosition.blockPositions);
+
+                    // animate movement only when we found a valid move
+                    yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, validPosition.position,
+                        validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
+                    yield return StartCoroutine(SolveHoles(unplacedPieces.Skip(1), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
+                    prevRotation = validPosition.eulerAngle;
+                    prevPosition = validPosition.position;
+
+                    grid.RemovePiece(validPosition.blockPositions);
+                }
+            }
+
+            // Done trying to fit this piece, put piece back in the ring where it came from
+            piece.transform.SetParent(PiecesContainer.transform, true);
+            yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition, piece.transform.localEulerAngles,
+                savedOriginalPosition, savedOriginalRotation, moveSpeeds[moveSpeedIndex]));
+        }
+    }
+
     IEnumerator Solve(IEnumerable<PuzzlePiece> unplacedPieces, IEnumerable<PuzzlePiece> placedPieces, PuzzleGrid grid, Action<IEnumerable<PuzzlePiece>> solvedFun)
     {
         if(unplacedPieces.Count() == 0)
@@ -239,8 +281,6 @@ public class TetrisCube : MonoBehaviour {
         piece.transform.SetParent(PiecesContainer.transform, true);
         yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition, piece.transform.localEulerAngles, 
             savedOriginalPosition, savedOriginalRotation, moveSpeeds[moveSpeedIndex]));
-
-        yield return null;
     }
 
     IEnumerator MovePiece(PuzzlePiece piece, Vector3 fromPosition, Vector3 fromRotation, Vector3 toPosition, Vector3 toRotation, float speed)
@@ -275,7 +315,8 @@ public class TetrisCube : MonoBehaviour {
         {
             running = true;
             startButtonText.text = "Stop";
-            StartCoroutine(Solve(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
+            StartCoroutine(SolveHoles(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
+            //StartCoroutine(Solve(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
             {
                 Debug.Log("Solved!");
                 StopAllCoroutines();
