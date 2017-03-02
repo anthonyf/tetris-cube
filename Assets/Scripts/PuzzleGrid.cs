@@ -42,66 +42,107 @@ class PuzzleGrid
             o.y + cell.y, 
             o.z + cell.z))
             .Where(c => 
-                c.x >= 0 && 
-                c.y >= 0 && 
+                c.x >= 0 &&
+                c.x < 4 &&
+                c.y >= 0 &&
+                c.y < 4 &&
                 c.z >= 0 && 
-                c.x < 4 && 
-                c.y < 4 && 
                 c.z < 4);
     }
 
-    public IEnumerable<HashSet<IntVector3>> FindHoles()
+    bool IsEmpty(IntVector3 v)
     {
-        var holes = new List<HashSet<IntVector3>>();
+        return !grid[v.z, v.y, v.x];
+    }
+
+    void ForEachCell(Action<int, int, int> action)
+    {
         for (int x = 0; x < 4; x++)
         {
             for (int y = 0; y < 4; y++)
             {
                 for (int z = 0; z < 4; z++)
                 {
-                    var currentCell = new IntVector3(x, y, z);
-                    if (grid[currentCell.z, currentCell.y, currentCell.x] == false)
+                    action.Invoke(x, y, z);
+                }
+            }
+        }
+    }
+
+    public IEnumerable<HashSet<IntVector3>> FindHoles()
+    {
+        var holes = new List<HashSet<IntVector3>>();
+        ForEachCell((x, y, z) =>
+        {
+            var currentCell = new IntVector3(x, y, z);
+            if (IsEmpty(currentCell))
+            {
+                // find neighboring holes
+                var neighborHoles = new List<HashSet<IntVector3>>();
+                foreach (var neighborCell in AdjacentCells(currentCell))
+                {
+                    if (IsEmpty(neighborCell))
                     {
-                        var neighborFoundInSet = false;
-                        foreach (var neighborCell in AdjacentCells(currentCell))
+                        foreach(var hole in holes)
                         {
-                            if (grid[neighborCell.z, neighborCell.y, neighborCell.x] == false)
+                            if(hole.Contains(neighborCell))
                             {
-                                HashSet<IntVector3> foundHole = null;
-                                foreach (var hole in holes)
-                                {
-                                    if (hole.Contains(neighborCell))
-                                    {
-                                        if(null == foundHole)
-                                        {
-                                            foundHole = hole;
-                                            hole.Add(currentCell);
-                                            neighborFoundInSet = true;
-                                        }
-                                        else
-                                        {
-                                            // join both groups of holes
-                                            hole.UnionWith(foundHole);
-                                            foundHole.UnionWith(hole);
-                                        }
-                                    }
-                                }
+                                neighborHoles.Add(hole);
                             }
                         }
-                        if (!neighborFoundInSet)
+                    }
+                }
+
+                if(neighborHoles.Count == 0)
+                {
+                    var newHole = new HashSet<IntVector3>();
+                    newHole.Add(currentCell);
+                    holes.Add(newHole);
+                }
+                else if(neighborHoles.Count == 1)
+                {
+                    neighborHoles[0].Add(currentCell);
+                }
+                else // neighborHoles.Count > 1
+                {
+                    var combined = new HashSet<IntVector3>();
+                    combined.Add(currentCell);
+                    foreach (var hole in neighborHoles)
+                    {
+                        holes.Remove(hole);
+                        foreach (var cell in hole)
                         {
-                            var newSet = new HashSet<IntVector3>();
-                            newSet.Add(currentCell);
-                            holes.Add(newSet);
+                            combined.Add(cell);
+                        }
+                    }
+                    holes.Add(combined);
+                }
+
+            }
+        });
+
+        holes = holes.OrderBy(h => h.Count).ToList();
+
+        /*
+        if(Debug.isDebugBuild)
+        {
+            foreach(var hole1 in holes)
+            {
+                foreach (var hole2 in holes)
+                {
+                    if (hole1 == hole2) continue;
+                    foreach(var cell1 in hole1)
+                    {
+                        foreach (var cell2 in hole2)
+                        {
+                            Debug.Assert(cell1 != cell2, "overlapping holes!");
                         }
                     }
                 }
             }
-        }
-        // remove duplicate holes
-        holes = holes.Distinct(new IntVector3HashSetComparer()).ToList();
-        Debug.Log("hole Count = " + holes.Count);
-        return holes.OrderBy(h => h.Count);
+        }*/
+
+        return holes;
     }
 
     /// <summary>
@@ -130,18 +171,5 @@ class PuzzleGrid
     public void RemovePiece(List<IntVector3> blocks)
     {
         blocks.ForEach(b => grid[b.z, b.y, b.x] = false);
-    }
-}
-
-class IntVector3HashSetComparer : IEqualityComparer<HashSet<IntVector3>>
-{
-    public bool Equals(HashSet<IntVector3> x, HashSet<IntVector3> y)
-    {
-        return x.SetEquals(y);
-    }
-
-    public int GetHashCode(HashSet<IntVector3> obj)
-    {
-        return obj.ToList().Aggregate(0, (a, b) => a.GetHashCode() ^ b.GetHashCode());
     }
 }

@@ -110,26 +110,10 @@ public class TetrisCube : MonoBehaviour {
     {
         var pieces = new List<PuzzlePiece>();
 
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-
+        for(int i = 0; i < 16; i++)
+        {
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
+        }
         return pieces;
     }
 
@@ -137,27 +121,16 @@ public class TetrisCube : MonoBehaviour {
     {
         var pieces = new List<PuzzlePiece>();
 
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
+        for(int i = 0; i < 3; i++)
+        {
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
+        }
 
         pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Axis));
-
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
-
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
-
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
 
         return pieces;
     }
@@ -166,23 +139,17 @@ public class TetrisCube : MonoBehaviour {
     {
         var pieces = new List<PuzzlePiece>();
 
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Axis));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Helix));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.ReverseHelix));
-
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Axis));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Helix));
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.ReverseHelix));
+        for (int i = 0; i < 2; i++)
+        {
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Axis));
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Helix));
+            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.ReverseHelix));
+        }
 
         return pieces;
     }
@@ -201,22 +168,17 @@ public class TetrisCube : MonoBehaviour {
             var savedOriginalRotation = piece.transform.localEulerAngles;
             var savedOriginalPosition = piece.transform.localPosition;
             piece.transform.SetParent(CubeContainer.transform, true);
-            var prevRotation = piece.transform.localEulerAngles;
-            var prevPosition = piece.transform.localPosition;
 
             foreach (var validPosition in piece.ValidBoardPositions())
             {                
-                var blocks = new HashSet<IntVector3>(validPosition.blockPositions);
-                if (hole.IsSupersetOf(blocks))
+                if (hole.IsSupersetOf(validPosition.blockPositions))
                 {
                     grid.AddPiece(validPosition.blockPositions);
 
                     // animate movement only when we found a valid move
-                    yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, validPosition.position,
+                    yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition, piece.transform.localEulerAngles, validPosition.position,
                         validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
                     yield return StartCoroutine(SolveHoles(unplacedPieces.Skip(1), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
-                    prevRotation = validPosition.eulerAngle;
-                    prevPosition = validPosition.position;
 
                     grid.RemovePiece(validPosition.blockPositions);
                 }
