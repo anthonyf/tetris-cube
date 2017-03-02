@@ -207,8 +207,6 @@ public class TetrisCube : MonoBehaviour {
         var savedOriginalRotation = piece.transform.localEulerAngles;
         var savedOriginalPosition = piece.transform.localPosition;
         piece.transform.SetParent(CubeContainer.transform, true);
-        var prevRotation = piece.transform.localEulerAngles;
-        var prevPosition = piece.transform.localPosition;
         foreach (var validPosition in piece.ValidBoardPositions())
         {
             if (grid.IsValidMove(validPosition.blockPositions))
@@ -217,11 +215,9 @@ public class TetrisCube : MonoBehaviour {
                 if(!grid.IsPuzzleUnsolveable())
                 {
                     // animate movement only when we found a valid move
-                    yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, validPosition.position,
+                    yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition, piece.transform.localEulerAngles, validPosition.position,
                         validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
                     yield return StartCoroutine(Solve(unplacedPieces.Skip(1), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
-                    prevRotation = validPosition.eulerAngle;
-                    prevPosition = validPosition.position;
                 }
                 grid.RemovePiece(validPosition.blockPositions);
             }
