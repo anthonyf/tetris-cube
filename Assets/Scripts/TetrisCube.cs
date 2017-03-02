@@ -79,8 +79,8 @@ public class TetrisCube : MonoBehaviour {
         }
         puzzlePieces = new List<PuzzlePiece>();
 
-        //puzzlePieces.AddRange(SpawnAllPuzzlePieces());
-        puzzlePieces.AddRange(SpawnAustinPuzzlePieces());
+        puzzlePieces.AddRange(SpawnAllPuzzlePieces());
+        //puzzlePieces.AddRange(SpawnAustinPuzzlePieces());
         //puzzlePieces.AddRange(SpawnAllIBeamPieces());
 
         PlacePiecesInACircle();
@@ -157,6 +157,11 @@ public class TetrisCube : MonoBehaviour {
     IEnumerator SolveHoles(IEnumerable<PuzzlePiece> unplacedPieces, IEnumerable<PuzzlePiece> placedPieces, PuzzleGrid grid, Action<IEnumerable<PuzzlePiece>> solvedFun)
     {
         var holes = grid.FindHoles();
+        if(!grid.IsPuzzleSolvable(holes))
+        {
+            // nothing to do, puzzle is in unsolvable state
+            yield return null;
+        }
         if(holes.Count() == 0)
         {
             solvedFun(placedPieces);
@@ -168,8 +173,6 @@ public class TetrisCube : MonoBehaviour {
             var savedOriginalRotation = piece.transform.localEulerAngles;
             var savedOriginalPosition = piece.transform.localPosition;
             piece.transform.SetParent(CubeContainer.transform, true);
-            var prevRotation = piece.transform.localEulerAngles;
-            var prevPosition = piece.transform.localPosition;
 
             foreach (var validPosition in piece.ValidBoardPositions())
             {                
@@ -178,11 +181,9 @@ public class TetrisCube : MonoBehaviour {
                     grid.AddPiece(validPosition.blockPositions);
 
                     // animate movement only when we found a valid move
-                    yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, validPosition.position,
+                    yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition, piece.transform.localEulerAngles, validPosition.position,
                         validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
-                    yield return StartCoroutine(SolveHoles(unplacedPieces.Skip(1), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
-                    prevRotation = validPosition.eulerAngle;
-                    prevPosition = validPosition.position;
+                    yield return StartCoroutine(SolveHoles(unplacedPieces.Where(p => p != piece), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
 
                     grid.RemovePiece(validPosition.blockPositions);
                 }
@@ -212,7 +213,7 @@ public class TetrisCube : MonoBehaviour {
             if (grid.IsValidMove(validPosition.blockPositions))
             {
                 grid.AddPiece(validPosition.blockPositions);
-                if(!grid.IsPuzzleUnsolveable())
+                if(grid.IsPuzzleSolvable())
                 {
                     // animate movement only when we found a valid move
                     yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition, piece.transform.localEulerAngles, validPosition.position,
@@ -261,8 +262,8 @@ public class TetrisCube : MonoBehaviour {
         {
             running = true;
             startButtonText.text = "Stop";
-            //StartCoroutine(SolveHoles(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
-            StartCoroutine(Solve(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
+            StartCoroutine(SolveHoles(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
+            //StartCoroutine(Solve(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
             {
                 Debug.Log("Solved!");
                 StopAllCoroutines();

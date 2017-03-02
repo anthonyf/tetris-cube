@@ -146,21 +146,26 @@ class PuzzleGrid
     }
 
     /// <summary>
-    /// Determines if a puzzle is in a state where it is unsolveable.  A puzzle is
+    /// Determines if a puzzle is in a state where it is solvable.  A puzzle is
     /// unsolvable if any contiguous empty spaces (holes) are not divisible by 4.
     /// </summary>
     /// <returns></returns>
-    public bool IsPuzzleUnsolveable()
+    public bool IsPuzzleSolvable()
     {
         var holes = FindHoles();
-        foreach(var set in holes)
+        return IsPuzzleSolvable(holes);
+    }
+
+    public bool IsPuzzleSolvable(IEnumerable<HashSet<IntVector3>> holes)
+    {
+        foreach (var set in holes)
         {
-            if(set.Count % 4 != 0)
+            if (set.Count % 4 != 0)
             {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     public void AddPiece(List<IntVector3> blocks)
