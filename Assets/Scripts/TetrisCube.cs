@@ -28,7 +28,7 @@ public class TetrisCube : MonoBehaviour {
     public List<PuzzlePiece> puzzlePieces;
 
 
-    int moveSpeedIndex = 4;
+    int moveSpeedIndex = 0;
     float[] moveSpeeds = { 1f, .5f, .25f, .125f, 0f };
     string[] moveSpeedText = { "1x", "2x", "3x", "4x", "InfinityX" };
 
@@ -168,6 +168,8 @@ public class TetrisCube : MonoBehaviour {
             var savedOriginalRotation = piece.transform.localEulerAngles;
             var savedOriginalPosition = piece.transform.localPosition;
             piece.transform.SetParent(CubeContainer.transform, true);
+            var prevRotation = piece.transform.localEulerAngles;
+            var prevPosition = piece.transform.localPosition;
 
             foreach (var validPosition in piece.ValidBoardPositions())
             {                
@@ -176,9 +178,11 @@ public class TetrisCube : MonoBehaviour {
                     grid.AddPiece(validPosition.blockPositions);
 
                     // animate movement only when we found a valid move
-                    yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition, piece.transform.localEulerAngles, validPosition.position,
+                    yield return StartCoroutine(MovePiece(piece, prevPosition, prevRotation, validPosition.position,
                         validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
                     yield return StartCoroutine(SolveHoles(unplacedPieces.Skip(1), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
+                    prevRotation = validPosition.eulerAngle;
+                    prevPosition = validPosition.position;
 
                     grid.RemovePiece(validPosition.blockPositions);
                 }
@@ -277,8 +281,8 @@ public class TetrisCube : MonoBehaviour {
         {
             running = true;
             startButtonText.text = "Stop";
-            StartCoroutine(SolveHoles(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
-            //StartCoroutine(Solve(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
+            //StartCoroutine(SolveHoles(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
+            StartCoroutine(Solve(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
             {
                 Debug.Log("Solved!");
                 StopAllCoroutines();

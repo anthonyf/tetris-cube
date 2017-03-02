@@ -204,11 +204,27 @@ public class PuzzlePiece : MonoBehaviour {
                         var blocks = BlockLocations;
                         if (grid.IsValidBoardPosition(blocks.ToList()))
                         {
-                            validPostions.Add(new PuzzlePiecePosition() {
-                                eulerAngle = transform.localEulerAngles,
-                                position = transform.localPosition,
-                                blockPositions = blocks
-                            });
+                            // eliminate duplicate orientations
+                            var shouldAdd = true;
+                            var blockSetA = new HashSet<IntVector3>(blocks);
+                            foreach (var position in validPostions)
+                            {
+                                var blockSetB = new HashSet<IntVector3>(position.blockPositions);
+                                if(blockSetA.SetEquals(blockSetB))
+                                {
+                                    shouldAdd = false;
+                                    break;     
+                                }
+                            }
+                            if(shouldAdd)
+                            {
+                                validPostions.Add(new PuzzlePiecePosition()
+                                {
+                                    eulerAngle = transform.localEulerAngles,
+                                    position = transform.localPosition,
+                                    blockPositions = blocks
+                                });
+                            }
                         }
                     }
                 }
