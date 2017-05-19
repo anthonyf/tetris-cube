@@ -189,7 +189,7 @@ public class PuzzlePiece : MonoBehaviour {
         // for all 24 rotations rotation
         foreach (var rotation in TwentyFourRotations.rotations)
         {
-            transform.localEulerAngles = rotation;
+            transform.localEulerAngles = rotation.ToVector3();
             // for each x position
             for (int x = -(4 - 1); x < (4 + (4 - 1)); x++)
             {
