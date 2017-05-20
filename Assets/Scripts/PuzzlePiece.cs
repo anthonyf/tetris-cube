@@ -123,28 +123,9 @@ public class PuzzlePiece : MonoBehaviour {
         StartCoroutine(DoRotation(axis, .5f));
     }
 
-    private List<IntVector3> GetBlockLocations(IntVector3 rotation, IntVector3 position)
+    private List<IntVector3> GetBlockLocations(IntVector3 rotation)
     {
-        List<IntVector3> locations = new List<IntVector3>();
-        var m = Matrix4x4.TRS(position.ToVector3(), Quaternion.Euler(rotation.ToVector3()), Vector3.one);
-        foreach (var block in blocks)
-        {
-            locations.Add(m.MultiplyPoint(block.transform.position).ToIntVector3());
-        }
-        return locations;
-    }
-
-    private List<IntVector3> BlockLocations {
-        get
-        {
-            List<IntVector3> locations = new List<IntVector3>();
-            foreach(var block in blocks)
-            {
-                var t = transform.parent.InverseTransformPoint(block.transform.position);
-                locations.Add(t.ToIntVector3());
-            }
-            return locations;
-        }
+        return TwentyFourRotations.RotatePoints(blocks.Select(b => b.transform.localPosition.ToIntVector3()).ToList(), rotation);
     }
 
     int doRotationCounter = 0;
@@ -183,14 +164,9 @@ public class PuzzlePiece : MonoBehaviour {
         List<PuzzlePiecePosition> validPostions = new List<PuzzlePiecePosition>();
         PuzzleGrid grid = new PuzzleGrid();
 
-
-        var savedLocalEulerAngles = transform.localEulerAngles.ToIntVector3();
-        var savedLocalPosition = transform.localPosition.ToIntVector3();
-
         // for all 24 rotations rotation
         foreach (var rotation in TwentyFourRotations.rotations)
         {
-           transform.localEulerAngles = rotation.ToVector3();
             // for each x position
             var outsideSpaces = BOARD_SIZE - 1;
             for (int x = -outsideSpaces; x < BOARD_SIZE + outsideSpaces; x++)
@@ -201,17 +177,8 @@ public class PuzzlePiece : MonoBehaviour {
                     // for each z position
                     for (int z = -outsideSpaces; z < BOARD_SIZE + outsideSpaces; z++)
                     {
-                        // place piece
-                        transform.localPosition = new Vector3(x, y, z);
-                        var blockLocations = BlockLocations;
-
-                        var blockLocations2 = GetBlockLocations(rotation, new IntVector3(x, y, z));
-
-
-
-                        var setsEqual = new HashSet<IntVector3>(blockLocations).SetEquals(new HashSet<IntVector3>(blockLocations2));
-                        //Debug.Log("setsEqual = " + setsEqual);
-                        //Assert.IsTrue();
+                        var piecePosition = new IntVector3(x, y, z);
+                        var blockLocations = GetBlockLocations(rotation).Select(p => (p.ToVector3() + piecePosition.ToVector3()).ToIntVector3()).ToList() ;
 
                         if (grid.IsValidBoardPosition(blockLocations.ToList()))
                         {
@@ -231,8 +198,8 @@ public class PuzzlePiece : MonoBehaviour {
                             {
                                 validPostions.Add(new PuzzlePiecePosition()
                                 {
-                                    eulerAngle = transform.localEulerAngles.ToIntVector3(),
-                                    position = transform.localPosition.ToIntVector3(),
+                                    eulerAngle = rotation,
+                                    position = piecePosition,
                                     blockPositions = blockLocations
                                 });
                             }
@@ -241,8 +208,6 @@ public class PuzzlePiece : MonoBehaviour {
                 }
             }
         }
-        transform.localPosition = savedLocalPosition.ToVector3();
-        transform.localEulerAngles = savedLocalEulerAngles.ToVector3();
 
         _cachedValidBoardPositions = validPostions;
         return validPostions;
