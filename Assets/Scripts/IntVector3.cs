@@ -9,7 +9,7 @@ public enum Axis
 }
 
 [Serializable]
-public class IntVector3 {
+public struct IntVector3 : IEquatable<IntVector3> {
 
     public IntVector3(int x, int y, int z)
     {
@@ -18,20 +18,20 @@ public class IntVector3 {
         this.z = z;
     }
 
-    public static Vector3[] AxisEulerAngles = 
+    public static IntVector3[] AxisEulerAngles = 
     {
-        new Vector3(  0,  0,  90),
-        new Vector3(  0,  0, -90),
-        new Vector3(  0, 90,   0),
-        new Vector3( 90,  0,   0),
-        new Vector3(-90,  0,   0),
+        new IntVector3(  0,  0,  90),
+        new IntVector3(  0,  0, -90),
+        new IntVector3(  0, 90,   0),
+        new IntVector3( 90,  0,   0),
+        new IntVector3(-90,  0,   0),
     };
 
     public int x { get; private set; }
     public int y { get; private set; }
     public int z { get; private set; }
 
-    internal Vector3 ToVector3()
+    public Vector3 ToVector3()
     {
         return new Vector3(x, y, z);
     }
@@ -41,17 +41,27 @@ public class IntVector3 {
         if (obj == null || GetType() != obj.GetType())
             return false;
 
-        IntVector3 v = (IntVector3)obj;
-        return (x == v.x) && (y == v.y) && (z == v.z);
+        return Equals((IntVector3)obj);
+    }
+
+    public bool Equals(IntVector3 other)
+    {
+        return (x == other.x) && (y == other.y) && (z == other.z);
     }
 
     public override int GetHashCode()
     {
         return x.GetHashCode() ^ y.GetHashCode() ^ z.GetHashCode();
     }
+}
 
-    public static IntVector3 FromVector3(Vector3 v)
+public static class IntVector3Extensions
+{
+    public static IntVector3 ToIntVector3(this Vector3 v)
     {
-        return new IntVector3((int)Mathf.Round(v.x), (int)Mathf.Round(v.y), (int)Mathf.Round(v.z));
+        var x = Mathf.RoundToInt(v.x);
+        var y = Mathf.RoundToInt(v.y);
+        var z = Mathf.RoundToInt(v.z);
+        return new IntVector3(x, y, z);
     }
 }

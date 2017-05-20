@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-class PuzzlePiecePosition
+public class PuzzlePiecePosition
 {
     public IntVector3 position { get; set; }
-    public IntVector3 rotation { get; set; }
-    public IntVector3[] BlockPositions { get; set; }
+    public IntVector3 eulerAngle { get; set; }
+    public List<IntVector3> blockPositions { get; set; }
 }

@@ -170,8 +170,8 @@ public class TetrisCube : MonoBehaviour {
         var hole = holes.First();
         foreach (var piece in unplacedPieces)
         {
-            var savedOriginalRotation = piece.transform.localEulerAngles;
-            var savedOriginalPosition = piece.transform.localPosition;
+            var savedOriginalRotation = piece.transform.localEulerAngles.ToIntVector3();
+            var savedOriginalPosition = piece.transform.localPosition.ToIntVector3();
             piece.transform.SetParent(CubeContainer.transform, true);
 
             foreach (var validPosition in piece.ValidBoardPositions())
@@ -181,7 +181,7 @@ public class TetrisCube : MonoBehaviour {
                     grid.AddPiece(validPosition.blockPositions);
 
                     // animate movement only when we found a valid move
-                    yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition, piece.transform.localEulerAngles, validPosition.position,
+                    yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition.ToIntVector3(), piece.transform.localEulerAngles.ToIntVector3(), validPosition.position,
                         validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
                     yield return StartCoroutine(SolveHoles(unplacedPieces.Where(p => p != piece), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
 
@@ -191,7 +191,7 @@ public class TetrisCube : MonoBehaviour {
 
             // Done trying to fit this piece, put piece back in the ring where it came from
             piece.transform.SetParent(PiecesContainer.transform, true);
-            yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition, piece.transform.localEulerAngles,
+            yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition.ToIntVector3(), piece.transform.localEulerAngles.ToIntVector3(),
                 savedOriginalPosition, savedOriginalRotation, moveSpeeds[moveSpeedIndex]));
         }
     }
@@ -205,8 +205,8 @@ public class TetrisCube : MonoBehaviour {
         }
 
         var piece = unplacedPieces.First();
-        var savedOriginalRotation = piece.transform.localEulerAngles;
-        var savedOriginalPosition = piece.transform.localPosition;
+        var savedOriginalRotation = piece.transform.localEulerAngles.ToIntVector3();
+        var savedOriginalPosition = piece.transform.localPosition.ToIntVector3();
         piece.transform.SetParent(CubeContainer.transform, true);
         foreach (var validPosition in piece.ValidBoardPositions())
         {
@@ -216,7 +216,7 @@ public class TetrisCube : MonoBehaviour {
                 if(grid.IsPuzzleSolvable())
                 {
                     // animate movement only when we found a valid move
-                    yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition, piece.transform.localEulerAngles, validPosition.position,
+                    yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition.ToIntVector3(), piece.transform.localEulerAngles.ToIntVector3(), validPosition.position,
                         validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
                     yield return StartCoroutine(Solve(unplacedPieces.Skip(1), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
                 }
@@ -226,12 +226,17 @@ public class TetrisCube : MonoBehaviour {
 
         // Done trying to fit this piece, put piece back in the ring where it came from
         piece.transform.SetParent(PiecesContainer.transform, true);
-        yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition, piece.transform.localEulerAngles, 
+        yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition.ToIntVector3(), piece.transform.localEulerAngles.ToIntVector3(), 
             savedOriginalPosition, savedOriginalRotation, moveSpeeds[moveSpeedIndex]));
     }
 
-    IEnumerator MovePiece(PuzzlePiece piece, Vector3 fromPosition, Vector3 fromRotation, Vector3 toPosition, Vector3 toRotation, float speed)
+    IEnumerator MovePiece(PuzzlePiece piece, IntVector3 _fromPosition, IntVector3 _fromRotation, IntVector3 _toPosition, IntVector3 _toRotation, float speed)
     {
+        var toPosition = _toPosition.ToVector3();
+        var toRotation = _toRotation.ToVector3();
+        var fromRotation = _fromRotation.ToVector3();
+        var fromPosition = _fromPosition.ToVector3();
+
         if (speed == 0f)
         {
             piece.transform.localPosition = toPosition;

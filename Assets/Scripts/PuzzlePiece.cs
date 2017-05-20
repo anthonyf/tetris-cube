@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System;
+using UnityEngine.Assertions;
 
 public enum PuzzlePieceTypes
 {
@@ -17,6 +18,7 @@ public enum PuzzlePieceTypes
 }
 
 public class PuzzlePiece : MonoBehaviour {
+    private const int BOARD_SIZE = 4;
 
     [SerializeField]
     Block blockPrefab;
@@ -33,7 +35,7 @@ public class PuzzlePiece : MonoBehaviour {
 
     private void Initialize(Color color, IntVector3[] blockPositions)
     {
-        var minV = new IntVector3(4, 4, 4);
+        var minV = new IntVector3(BOARD_SIZE, BOARD_SIZE, BOARD_SIZE);
         var maxV = new IntVector3(0, 0, 0);
         foreach (var v in blockPositions)
         {
@@ -56,56 +58,56 @@ public class PuzzlePiece : MonoBehaviour {
         switch (type)
         {
             case PuzzlePieceTypes.IBeam:
-                Initialize(Color.cyan, new IntVector3[4] {
+                Initialize(Color.cyan, new IntVector3[BOARD_SIZE] {
                     new IntVector3(0, 0, 0),
                     new IntVector3(1, 0, 0),
                     new IntVector3(2, 0, 0),
                     new IntVector3(3, 0, 0) });
                 break;
             case PuzzlePieceTypes.Box:
-                Initialize(Color.yellow, new IntVector3[4] {
+                Initialize(Color.yellow, new IntVector3[BOARD_SIZE] {
                     new IntVector3(0, 1, 0),
                     new IntVector3(1, 1, 0),
                     new IntVector3(1, 0, 0),
                     new IntVector3(0, 0, 0) });
                 break;
             case PuzzlePieceTypes.Axis:
-                Initialize(Color.green, new IntVector3[4] {
+                Initialize(Color.green, new IntVector3[BOARD_SIZE] {
                     new IntVector3(0, 0, 0),
                     new IntVector3(1, 0, 0),
                     new IntVector3(1, 0, 1),
                     new IntVector3(1, 1, 0) });
                 break;
             case PuzzlePieceTypes.L:
-                Initialize(Color.blue, new IntVector3[4] {
+                Initialize(Color.blue, new IntVector3[BOARD_SIZE] {
                     new IntVector3(0, 0, 0),
                     new IntVector3(1, 0, 0),
                     new IntVector3(2, 0, 0),
                     new IntVector3(2, 1, 0) });
                 break;
             case PuzzlePieceTypes.S:
-                Initialize(Color.red, new IntVector3[4] {
+                Initialize(Color.red, new IntVector3[BOARD_SIZE] {
                     new IntVector3(1, 0, 0),
                     new IntVector3(2, 0, 0),
                     new IntVector3(0, 1, 0),
                     new IntVector3(1, 1, 0) });
                 break;
             case PuzzlePieceTypes.Bump:
-                Initialize(Color.white, new IntVector3[4] {
+                Initialize(Color.white, new IntVector3[BOARD_SIZE] {
                     new IntVector3(0, 1, 0),
                     new IntVector3(1, 1, 0),
                     new IntVector3(2, 1, 0),
                     new IntVector3(1, 0, 0) });
                 break;
             case PuzzlePieceTypes.Helix:
-                Initialize(Color.magenta, new IntVector3[4] {
+                Initialize(Color.magenta, new IntVector3[BOARD_SIZE] {
                     new IntVector3(0, 0, 0),
                     new IntVector3(1, 0, 0),
                     new IntVector3(1, 1, 0),
                     new IntVector3(1, 1, 1) });
                 break;
             case PuzzlePieceTypes.ReverseHelix:
-                Initialize(Color.gray, new IntVector3[4] {
+                Initialize(Color.gray, new IntVector3[BOARD_SIZE] {
                     new IntVector3(0, 0, 0),
                     new IntVector3(0, 0, 1),
                     new IntVector3(1, 0, 0),
@@ -121,6 +123,17 @@ public class PuzzlePiece : MonoBehaviour {
         StartCoroutine(DoRotation(axis, .5f));
     }
 
+    private List<IntVector3> GetBlockLocations(IntVector3 rotation, IntVector3 position)
+    {
+        List<IntVector3> locations = new List<IntVector3>();
+        var m = Matrix4x4.TRS(position.ToVector3(), Quaternion.Euler(rotation.ToVector3()), Vector3.one);
+        foreach (var block in blocks)
+        {
+            locations.Add(m.MultiplyPoint(block.transform.position).ToIntVector3());
+        }
+        return locations;
+    }
+
     private List<IntVector3> BlockLocations {
         get
         {
@@ -128,10 +141,7 @@ public class PuzzlePiece : MonoBehaviour {
             foreach(var block in blocks)
             {
                 var t = transform.parent.InverseTransformPoint(block.transform.position);
-                locations.Add(new IntVector3(
-                    (int)Math.Round(t.x), 
-                    (int)Math.Round(t.y), 
-                    (int)Math.Round(t.z)));
+                locations.Add(t.ToIntVector3());
             }
             return locations;
         }
@@ -159,16 +169,6 @@ public class PuzzlePiece : MonoBehaviour {
 
         transform.localEulerAngles = endRotation;
         doRotationCounter--;
-        foreach (var block in BlockLocations) {
-            Debug.Log("block location x=" + block.x + " y=" + block.y + " z=" + block.z);
-        }
-    }
-
-    public class PuzzlePiecePosition
-    {
-        public Vector3 position;
-        public Vector3 eulerAngle;
-        public List<IntVector3> blockPositions;
     }
 
     List<PuzzlePiecePosition> _cachedValidBoardPositions = null;
@@ -183,30 +183,41 @@ public class PuzzlePiece : MonoBehaviour {
         List<PuzzlePiecePosition> validPostions = new List<PuzzlePiecePosition>();
         PuzzleGrid grid = new PuzzleGrid();
 
-        var savedLocalEulerAngles = transform.localEulerAngles;
-        var savedLocalPosition = transform.localPosition;
+
+        var savedLocalEulerAngles = transform.localEulerAngles.ToIntVector3();
+        var savedLocalPosition = transform.localPosition.ToIntVector3();
 
         // for all 24 rotations rotation
         foreach (var rotation in TwentyFourRotations.rotations)
         {
-            transform.localEulerAngles = rotation.ToVector3();
+           transform.localEulerAngles = rotation.ToVector3();
             // for each x position
-            for (int x = -(4 - 1); x < (4 + (4 - 1)); x++)
+            var outsideSpaces = BOARD_SIZE - 1;
+            for (int x = -outsideSpaces; x < BOARD_SIZE + outsideSpaces; x++)
             {
                 // for each y position
-                for (int y = -(4 - 1); y < (4 + (4 - 1)); y++)
+                for (int y = -outsideSpaces; y < BOARD_SIZE + outsideSpaces; y++)
                 {
                     // for each z position
-                    for (int z = -(4 - 1); z < (4 + (4 - 1)); z++)
+                    for (int z = -outsideSpaces; z < BOARD_SIZE + outsideSpaces; z++)
                     {
                         // place piece
                         transform.localPosition = new Vector3(x, y, z);
-                        var blocks = BlockLocations;
-                        if (grid.IsValidBoardPosition(blocks.ToList()))
+                        var blockLocations = BlockLocations;
+
+                        var blockLocations2 = GetBlockLocations(rotation, new IntVector3(x, y, z));
+
+
+
+                        var setsEqual = new HashSet<IntVector3>(blockLocations).SetEquals(new HashSet<IntVector3>(blockLocations2));
+                        //Debug.Log("setsEqual = " + setsEqual);
+                        //Assert.IsTrue();
+
+                        if (grid.IsValidBoardPosition(blockLocations.ToList()))
                         {
                             // eliminate duplicate orientations
                             var shouldAdd = true;
-                            var blockSetA = new HashSet<IntVector3>(blocks);
+                            var blockSetA = new HashSet<IntVector3>(blockLocations);
                             foreach (var position in validPostions)
                             {
                                 var blockSetB = new HashSet<IntVector3>(position.blockPositions);
@@ -220,9 +231,9 @@ public class PuzzlePiece : MonoBehaviour {
                             {
                                 validPostions.Add(new PuzzlePiecePosition()
                                 {
-                                    eulerAngle = transform.localEulerAngles,
-                                    position = transform.localPosition,
-                                    blockPositions = blocks
+                                    eulerAngle = transform.localEulerAngles.ToIntVector3(),
+                                    position = transform.localPosition.ToIntVector3(),
+                                    blockPositions = blockLocations
                                 });
                             }
                         }
@@ -230,8 +241,8 @@ public class PuzzlePiece : MonoBehaviour {
                 }
             }
         }
-        transform.localPosition = savedLocalPosition;
-        transform.localEulerAngles = savedLocalEulerAngles;
+        transform.localPosition = savedLocalPosition.ToVector3();
+        transform.localEulerAngles = savedLocalEulerAngles.ToVector3();
 
         _cachedValidBoardPositions = validPostions;
         return validPostions;
