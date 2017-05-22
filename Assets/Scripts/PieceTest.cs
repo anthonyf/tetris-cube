@@ -15,8 +15,8 @@ public class PieceTest : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         _puzzlePiece = Instantiate(puzzlePiecePrefab);
+        _puzzlePiece.puzzlePiece = new TetrisPuzzlePiece(type);
         _puzzlePiece.transform.SetParent(transform, false);
-        _puzzlePiece.type = type;
 	}
 
     public void RotateZ()

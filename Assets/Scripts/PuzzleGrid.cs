@@ -6,7 +6,7 @@ using UnityEngine;
 
 class PuzzleGrid
 {
-    bool[,,] grid = new bool[4,4,4];
+    bool[,,] grid = new bool[TetrisCubeSolver.BOARD_SIZE,TetrisCubeSolver.BOARD_SIZE,TetrisCubeSolver.BOARD_SIZE];
 
     public bool IsValidBoardPosition(List<IntVector3> blocks)
     {
@@ -14,16 +14,15 @@ class PuzzleGrid
             b.x >= 0 &&
             b.y >= 0 &&
             b.z >= 0 &&
-            b.x < 4 &&
-            b.y < 4 &&
-            b.z < 4);
+            b.x < TetrisCubeSolver.BOARD_SIZE &&
+            b.y < TetrisCubeSolver.BOARD_SIZE &&
+            b.z < TetrisCubeSolver.BOARD_SIZE);
     }
 
     public bool IsValidMove(List<IntVector3> blocks)
     {
         return IsValidBoardPosition(blocks) && 
-               blocks.ToList().TrueForAll(b =>
-                   grid[b.z, b.y, b.x] == false);
+               blocks.ToList().TrueForAll(b => IsCellEmpty(b));
     }
 
     static IntVector3[] offsets = new IntVector3[] {
@@ -43,27 +42,27 @@ class PuzzleGrid
             o.z + cell.z))
             .Where(c => 
                 c.x >= 0 &&
-                c.x < 4 &&
+                c.x < TetrisCubeSolver.BOARD_SIZE &&
                 c.y >= 0 &&
-                c.y < 4 &&
+                c.y < TetrisCubeSolver.BOARD_SIZE &&
                 c.z >= 0 && 
-                c.z < 4);
+                c.z < TetrisCubeSolver.BOARD_SIZE);
     }
 
-    bool IsEmpty(IntVector3 v)
+    bool IsCellEmpty(IntVector3 v)
     {
-        return !grid[v.z, v.y, v.x];
+        return !grid[v.x, v.y, v.z];
     }
 
-    void ForEachCell(Action<int, int, int> action)
+    IEnumerable<IntVector3> CellIndexes()
     {
-        for (int x = 0; x < 4; x++)
+        for (int x = 0; x < TetrisCubeSolver.BOARD_SIZE; x++)
         {
-            for (int y = 0; y < 4; y++)
+            for (int y = 0; y < TetrisCubeSolver.BOARD_SIZE; y++)
             {
-                for (int z = 0; z < 4; z++)
+                for (int z = 0; z < TetrisCubeSolver.BOARD_SIZE; z++)
                 {
-                    action.Invoke(x, y, z);
+                    yield return new IntVector3(x, y, z);
                 }
             }
         }
@@ -71,83 +70,39 @@ class PuzzleGrid
 
     public IEnumerable<HashSet<IntVector3>> FindHoles()
     {
-        var holes = new List<HashSet<IntVector3>>();
-        ForEachCell((x, y, z) =>
+        var visited = new HashSet<IntVector3>();
+        foreach (var currentCell in CellIndexes())
         {
-            var currentCell = new IntVector3(x, y, z);
-            if (IsEmpty(currentCell))
+            if(!visited.Contains(currentCell) && IsCellEmpty(currentCell))
             {
-                // find neighboring holes
-                var neighborHoles = new List<HashSet<IntVector3>>();
-                foreach (var neighborCell in AdjacentCells(currentCell))
-                {
-                    if (IsEmpty(neighborCell))
-                    {
-                        foreach(var hole in holes)
-                        {
-                            if(hole.Contains(neighborCell))
-                            {
-                                neighborHoles.Add(hole);
-                            }
-                        }
-                    }
-                }
-
-                if(neighborHoles.Count == 0)
-                {
-                    var newHole = new HashSet<IntVector3>();
-                    newHole.Add(currentCell);
-                    holes.Add(newHole);
-                }
-                else if(neighborHoles.Count == 1)
-                {
-                    neighborHoles[0].Add(currentCell);
-                }
-                else // neighborHoles.Count > 1
-                {
-                    var combined = new HashSet<IntVector3>();
-                    combined.Add(currentCell);
-                    foreach (var hole in neighborHoles)
-                    {
-                        holes.Remove(hole);
-                        foreach (var cell in hole)
-                        {
-                            combined.Add(cell);
-                        }
-                    }
-                    holes.Add(combined);
-                }
-
+                var hole = FindHoleStartingAt(currentCell, visited);
+                yield return hole;
             }
-        });
+        }
+    }
 
-        holes = holes.OrderBy(h => h.Count).ToList();
-
-        /*
-        if(Debug.isDebugBuild)
+    HashSet<IntVector3> FindHoleStartingAt(IntVector3 start, HashSet<IntVector3> visited)
+    {
+        var hole = new HashSet<IntVector3>();
+        hole.Add(start);
+        visited.Add(start);
+        foreach (var neighborCell in AdjacentCells(start))
         {
-            foreach(var hole1 in holes)
+            if(!visited.Contains(neighborCell) && IsCellEmpty(neighborCell))
             {
-                foreach (var hole2 in holes)
+                foreach(var i in FindHoleStartingAt(neighborCell, visited))
                 {
-                    if (hole1 == hole2) continue;
-                    foreach(var cell1 in hole1)
-                    {
-                        foreach (var cell2 in hole2)
-                        {
-                            Debug.Assert(cell1 != cell2, "overlapping holes!");
-                        }
-                    }
+                    hole.Add(i);
                 }
             }
-        }*/
-
-        return holes;
+        }
+        return hole;
     }
 
     /// <summary>
     /// Determines if a puzzle is in a state where it is solvable.  A puzzle is
-    /// unsolvable if any contiguous empty spaces (holes) are not divisible by 4.
+    /// unsolvable if any contiguous empty spaces (holes) are not divisible by 
+    /// TetrisCubeSolver.BOARD_SIZE.
     /// </summary>
     /// <returns></returns>
     public bool IsPuzzleSolvable()
@@ -160,7 +115,7 @@ class PuzzleGrid
     {
         foreach (var set in holes)
         {
-            if (set.Count % 4 != 0)
+            if (set.Count % TetrisCubeSolver.BOARD_SIZE != 0)
             {
                 return false;
             }
@@ -170,11 +125,11 @@ class PuzzleGrid
 
     public void AddPiece(List<IntVector3> blocks)
     {
-        blocks.ForEach(b => grid[b.z, b.y, b.x] = true);
+        blocks.ForEach(b => grid[b.x, b.y, b.z] = true);
     }    
 
     public void RemovePiece(List<IntVector3> blocks)
     {
-        blocks.ForEach(b => grid[b.z, b.y, b.x] = false);
+        blocks.ForEach(b => grid[b.x, b.y, b.z] = false);
     }
 }

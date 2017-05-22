@@ -79,8 +79,8 @@ public class TetrisCube : MonoBehaviour {
         }
         puzzlePieces = new List<PuzzlePiece>();
 
-        puzzlePieces.AddRange(SpawnAllPuzzlePieces());
-        //puzzlePieces.AddRange(SpawnAustinPuzzlePieces());
+        //puzzlePieces.AddRange(SpawnAllPuzzlePieces());
+        puzzlePieces.AddRange(SpawnAustinPuzzlePieces());
         //puzzlePieces.AddRange(SpawnAllIBeamPieces());
 
         PlacePiecesInACircle();
@@ -102,7 +102,7 @@ public class TetrisCube : MonoBehaviour {
     {
         var p = Instantiate(puzzlePiecePrefab);
         p.transform.SetParent(PiecesContainer.transform, false);
-        p.type = type;
+        p.puzzlePiece = new TetrisPuzzlePiece(type);
         return p;
     }
 
@@ -174,7 +174,7 @@ public class TetrisCube : MonoBehaviour {
             var savedOriginalPosition = piece.transform.localPosition.ToIntVector3();
             piece.transform.SetParent(CubeContainer.transform, true);
 
-            foreach (var validPosition in piece.ValidBoardPositions())
+            foreach (var validPosition in piece.puzzlePiece.ValidBoardPositions())
             {                
                 if (hole.IsSupersetOf(validPosition.blockPositions))
                 {
@@ -208,7 +208,7 @@ public class TetrisCube : MonoBehaviour {
         var savedOriginalRotation = piece.transform.localEulerAngles.ToIntVector3();
         var savedOriginalPosition = piece.transform.localPosition.ToIntVector3();
         piece.transform.SetParent(CubeContainer.transform, true);
-        foreach (var validPosition in piece.ValidBoardPositions())
+        foreach (var validPosition in piece.puzzlePiece.ValidBoardPositions())
         {
             if (grid.IsValidMove(validPosition.blockPositions))
             {
