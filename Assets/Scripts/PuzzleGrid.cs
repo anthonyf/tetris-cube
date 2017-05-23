@@ -99,18 +99,23 @@ class PuzzleGrid
         return hole;
     }
 
+    public bool HasOnlyOneHole(IEnumerable<HashSet<IntVector3>> holes)
+    {
+        var count = 0;
+        foreach(var h in holes)
+        {
+            count++;
+            if (count > 1) break;
+        }
+        return count == 1;
+    }
+
     /// <summary>
     /// Determines if a puzzle is in a state where it is solvable.  A puzzle is
     /// unsolvable if any contiguous empty spaces (holes) are not divisible by 
     /// TetrisCubeSolver.BOARD_SIZE.
     /// </summary>
     /// <returns></returns>
-    public bool IsPuzzleSolvable()
-    {
-        var holes = FindHoles();
-        return IsPuzzleSolvable(holes);
-    }
-
     public bool IsPuzzleSolvable(IEnumerable<HashSet<IntVector3>> holes)
     {
         foreach (var set in holes)

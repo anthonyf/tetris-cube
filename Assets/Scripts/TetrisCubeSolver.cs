@@ -71,8 +71,8 @@ public class TetrisCubeSolver {
         List<TetrisPuzzlePiece> pieces,
         Action<TetrisPuzzlePiece, PuzzlePiecePosition> addPieceFun)
     {
-        return SolveHoles(pieces, new List<PuzzlePiecePosition>(), new PuzzleGrid(), addPieceFun);        
-        //return SolveBruteForce(pieces, new List<PuzzlePiecePosition>(), new PuzzleGrid(), addPieceFun);
+        //return SolveHoles(pieces, new List<PuzzlePiecePosition>(), new PuzzleGrid(), addPieceFun);        
+        return SolveBruteForce(pieces, new List<PuzzlePiecePosition>(), new PuzzleGrid(), addPieceFun);
     }
 
     static IEnumerable<List<PuzzlePiecePosition>> SolveBruteForce(
@@ -93,7 +93,7 @@ public class TetrisCubeSolver {
             if (grid.IsValidMove(validPosition.blockPositions))
             {
                 grid.AddPiece(validPosition.blockPositions);
-                if (grid.IsPuzzleSolvable())
+                if (/*grid.IsPuzzleSolvable()*/ grid.HasOnlyOneHole(grid.FindHoles()))
                 {
                     addPieceFun(piece, validPosition);
                     var e = SolveHoles(unplacedPieces.Where(p => p != piece), placedPieces.Concat(new PuzzlePiecePosition[] { validPosition }), grid, addPieceFun);

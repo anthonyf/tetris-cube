@@ -213,7 +213,7 @@ public class TetrisCube : MonoBehaviour {
             if (grid.IsValidMove(validPosition.blockPositions))
             {
                 grid.AddPiece(validPosition.blockPositions);
-                if(grid.IsPuzzleSolvable())
+                if(grid.IsPuzzleSolvable(grid.FindHoles()))
                 {
                     // animate movement only when we found a valid move
                     yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition.ToIntVector3(), piece.transform.localEulerAngles.ToIntVector3(), validPosition.position,
