@@ -10,8 +10,8 @@ public class TetrisCubeSolverTest
 
 	[Test]
 	public void TestSolveIBeams() {
-        var steps = TetrisCubeSolver.Solve(TetrisCubeSolver.SpawnAllIBeamPieces())
-            .Select(s => s.type == TetrisCubeSolver.SolveStep.StepType.Solved)
+        var steps = TetrisCubeSolver.Solve(TetrisCubeSolver.CreateAllIBeamPieces(), true)
+            .Where(s => s.type == TetrisCubeSolver.SolveStep.StepType.Solved)
             .First();
 
         Assert.Pass();
@@ -20,8 +20,8 @@ public class TetrisCubeSolverTest
     [Test]
     public void TestSolveLPieces()
     {
-        var steps = TetrisCubeSolver.Solve(TetrisCubeSolver.SpawnAllLPieces())
-            .Select(s => s.type == TetrisCubeSolver.SolveStep.StepType.Solved)
+        var steps = TetrisCubeSolver.Solve(TetrisCubeSolver.CreateAllLPieces(), true)
+            .Where(s => s.type == TetrisCubeSolver.SolveStep.StepType.Solved)
             .First();
 
         Assert.Pass();
@@ -30,8 +30,8 @@ public class TetrisCubeSolverTest
     [Test]
     public void TestSolveAustinPieces()
     {
-        var steps = TetrisCubeSolver.Solve(TetrisCubeSolver.SpawnAustinPuzzlePieces())
-            .Select(s => s.type == TetrisCubeSolver.SolveStep.StepType.Solved)
+        var steps = TetrisCubeSolver.Solve(TetrisCubeSolver.CreateAustinPuzzlePieces(), true)
+            .Where(s => s.type == TetrisCubeSolver.SolveStep.StepType.Solved)
             .First();
 
         Assert.Pass();
@@ -40,8 +40,8 @@ public class TetrisCubeSolverTest
     [Test]
     public void TestSolveNormalTetrisPieces()
     {
-        var steps = TetrisCubeSolver.Solve(TetrisCubeSolver.SpawnAllPuzzlePieces())
-            .Select(s => s.type == TetrisCubeSolver.SolveStep.StepType.Solved)
+        var steps = TetrisCubeSolver.Solve(TetrisCubeSolver.CreateAllPuzzlePieces(), true)
+            .Where(s => s.type == TetrisCubeSolver.SolveStep.StepType.Solved)
             .First();
 
         Assert.Pass();

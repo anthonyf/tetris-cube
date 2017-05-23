@@ -10,6 +10,8 @@ public class PuzzlePiece : MonoBehaviour {
     Block blockPrefab;
 
     public TetrisPuzzlePiece puzzlePiece;
+    public Vector3 initialPosition;
+    public Vector3 initialRotation;
 
     // Use this for initialization
     void Start() {
@@ -18,21 +20,14 @@ public class PuzzlePiece : MonoBehaviour {
 
     private void Initialize(TetrisPuzzlePiece puzzlePiece)
     {
-        var minV = new IntVector3(TetrisCubeSolver.BOARD_SIZE, TetrisCubeSolver.BOARD_SIZE, TetrisCubeSolver.BOARD_SIZE);
-        var maxV = new IntVector3(0, 0, 0);
         var blockPositions = puzzlePiece.blocks.Select(b => b.position);
-        foreach (var v in blockPositions)
-        {
-            minV = new IntVector3(Mathf.Min(minV.x, v.x), Mathf.Min(minV.y, v.y), Mathf.Min(minV.z, v.z));
-            maxV = new IntVector3(Mathf.Max(maxV.x, v.x), Mathf.Max(maxV.y, v.y), Mathf.Max(maxV.z, v.z));
-        }
 
         foreach (var v in blockPositions)
         {
             var b = Instantiate(blockPrefab);
             b.transform.SetParent(transform, false);
             b.color = puzzlePiece.color;
-            b.transform.localPosition = new Vector3(v.x - (maxV.x - minV.x) / 2, v.y - (maxV.y - minV.y) / 2, v.z - (maxV.z - minV.z) / 2);
+            b.transform.localPosition = v.ToVector3();
         }
     }
 

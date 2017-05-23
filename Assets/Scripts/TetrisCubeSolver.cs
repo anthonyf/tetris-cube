@@ -8,7 +8,7 @@ public class TetrisCubeSolver {
 
     public const int BOARD_SIZE = 4;
 
-    public static List<TetrisPuzzlePiece> SpawnAllIBeamPieces()
+    public static List<TetrisPuzzlePiece> CreateAllIBeamPieces()
     {
         var pieces = new List<TetrisPuzzlePiece>();
 
@@ -19,7 +19,7 @@ public class TetrisCubeSolver {
         return pieces;
     }
 
-    public static List<TetrisPuzzlePiece> SpawnAllLPieces()
+    public static List<TetrisPuzzlePiece> CreateAllLPieces()
     {
         var pieces = new List<TetrisPuzzlePiece>();
 
@@ -30,7 +30,7 @@ public class TetrisCubeSolver {
         return pieces;
     }
 
-    public static List<TetrisPuzzlePiece> SpawnAustinPuzzlePieces()
+    public static List<TetrisPuzzlePiece> CreateAustinPuzzlePieces()
     {
         var pieces = new List<TetrisPuzzlePiece>();
 
@@ -48,7 +48,7 @@ public class TetrisCubeSolver {
         return pieces;
     }
 
-    public static List<TetrisPuzzlePiece> SpawnAllPuzzlePieces()
+    public static List<TetrisPuzzlePiece> CreateAllPuzzlePieces()
     {
         var pieces = new List<TetrisPuzzlePiece>();
 
@@ -72,6 +72,7 @@ public class TetrisCubeSolver {
         public enum StepType
         {
             AddPiece,
+            RemovePiece,
             Solved
         }
         public StepType type { get; private set; }
@@ -84,16 +85,17 @@ public class TetrisCubeSolver {
     }
 
     public static IEnumerable<SolveStep> Solve(
-        List<TetrisPuzzlePiece> pieces)
+        List<TetrisPuzzlePiece> pieces, bool includeSteps)
     {
-        //return SolveHoles(pieces, new List<PuzzlePiecePosition>(), new PuzzleGrid());        
-        return SolveBruteForce(pieces, new List<PuzzlePiecePosition>(), new PuzzleGrid());
+        return SolveHoles(pieces, new List<PuzzlePiecePosition>(), new PuzzleGrid(), includeSteps);        
+        //return SolveBruteForce(pieces, new List<PuzzlePiecePosition>(), new PuzzleGrid(), includeSteps);
     }
 
     static IEnumerable<SolveStep> SolveBruteForce(
         IEnumerable<TetrisPuzzlePiece> unplacedPieces,
         IEnumerable<PuzzlePiecePosition> placedPieces,
-        PuzzleGrid grid)
+        PuzzleGrid grid,
+        bool includeSteps)
     {
         if (unplacedPieces.Count() == 0)
         {
@@ -107,15 +109,16 @@ public class TetrisCubeSolver {
             if (grid.IsValidMove(validPosition.blockPositions))
             {
                 grid.AddPiece(validPosition.blockPositions);
-                if (/*grid.IsPuzzleSolvable()*/ grid.HasOnlyOneHole(grid.FindHoles()))
+                if (grid.IsPuzzleSolvable(grid.FindHoles()) /*grid.HasOnlyOneHole(grid.FindHoles())*/)
                 {
                     var newPlacedPieces = placedPieces.Concat(new PuzzlePiecePosition[] { validPosition });
-                    yield return new SolveStep(SolveStep.StepType.AddPiece, newPlacedPieces);
-                    var e = SolveBruteForce(unplacedPieces.Where(p => p != piece), newPlacedPieces, grid);
+                    if (includeSteps) yield return new SolveStep(SolveStep.StepType.AddPiece, newPlacedPieces);
+                    var e = SolveBruteForce(unplacedPieces.Where(p => p != piece), newPlacedPieces, grid, includeSteps);
                     foreach (var s in e)
                     {
                         yield return s;
                     }
+                    if (includeSteps) yield return new SolveStep(SolveStep.StepType.RemovePiece, newPlacedPieces);
                 }
                 grid.RemovePiece(validPosition.blockPositions);
             }
@@ -126,7 +129,8 @@ public class TetrisCubeSolver {
     static IEnumerable<SolveStep> SolveHoles(
         IEnumerable<TetrisPuzzlePiece> unplacedPieces, 
         IEnumerable<PuzzlePiecePosition> placedPieces, 
-        PuzzleGrid grid)
+        PuzzleGrid grid,
+        bool includeSteps)
     {
         var holes = grid.FindHoles();
         if (!grid.IsPuzzleSolvable(holes))
@@ -148,12 +152,13 @@ public class TetrisCubeSolver {
                 {
                     grid.AddPiece(validPosition.blockPositions);
                     var newPlacedPieces = placedPieces.Concat(new PuzzlePiecePosition[] { validPosition });
-                    yield return new SolveStep(SolveStep.StepType.AddPiece, newPlacedPieces);
-                    var e = SolveHoles(unplacedPieces.Where(p => p != piece), newPlacedPieces, grid);
+                    if (includeSteps) yield return new SolveStep(SolveStep.StepType.AddPiece, newPlacedPieces);
+                    var e = SolveHoles(unplacedPieces.Where(p => p != piece), newPlacedPieces, grid, includeSteps);
                     foreach(var s in e)
                     {
                         yield return s;
                     }
+                    if (includeSteps) yield return new SolveStep(SolveStep.StepType.RemovePiece, newPlacedPieces);
                     grid.RemovePiece(validPosition.blockPositions);
                 }
             }
@@ -194,75 +199,88 @@ public class TetrisPuzzlePiece
 
     public TetrisPuzzlePiece(PuzzlePieceTypes type)
     {
+        List<IntVector3> blocks;
         switch (type)
         {
             case PuzzlePieceTypes.IBeam:
                 color = Color.cyan;
-                blocks = new List<TetrisPuzzlePieceBlock>() {
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(0, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(2, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(3, 0, 0))};
+                blocks = new List<IntVector3>() {
+                    new IntVector3(0, 0, 0),
+                    new IntVector3(1, 0, 0),
+                    new IntVector3(2, 0, 0),
+                    new IntVector3(3, 0, 0)};
                 break;
             case PuzzlePieceTypes.Box:
                 color = Color.yellow;
-                blocks = new List<TetrisPuzzlePieceBlock>() {
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(0, 1, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 1, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(0, 0, 0)) };
+                blocks = new List<IntVector3>() {
+                    new IntVector3(0, 1, 0),
+                    new IntVector3(1, 1, 0),
+                    new IntVector3(1, 0, 0),
+                    new IntVector3(0, 0, 0) };
                 break;
             case PuzzlePieceTypes.Axis:
                 color = Color.green;
-                blocks = new List<TetrisPuzzlePieceBlock>() {
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(0, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 0, 1)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 1, 0)) };
+                blocks = new List<IntVector3>() {
+                    new IntVector3(0, 0, 0),
+                    new IntVector3(1, 0, 0),
+                    new IntVector3(1, 0, 1),
+                    new IntVector3(1, 1, 0) };
                 break;
             case PuzzlePieceTypes.L:
                 color = Color.blue;
-                blocks = new List<TetrisPuzzlePieceBlock>() {
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(0, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(2, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(2, 1, 0)) };
+                blocks = new List<IntVector3>() {
+                    new IntVector3(0, 0, 0),
+                    new IntVector3(1, 0, 0),
+                    new IntVector3(2, 0, 0),
+                    new IntVector3(2, 1, 0) };
                 break;
             case PuzzlePieceTypes.S:
                 color = Color.red;
-                blocks = new List<TetrisPuzzlePieceBlock>() {
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(2, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(0, 1, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 1, 0)) };
+                blocks = new List<IntVector3>() {
+                    new IntVector3(1, 0, 0),
+                    new IntVector3(2, 0, 0),
+                    new IntVector3(0, 1, 0),
+                    new IntVector3(1, 1, 0) };
                 break;
             case PuzzlePieceTypes.Bump:
                 color = Color.white;
-                blocks = new List<TetrisPuzzlePieceBlock>() {
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(0, 1, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 1, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(2, 1, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 0, 0)) };
+                blocks = new List<IntVector3>() {
+                    new IntVector3(0, 1, 0),
+                    new IntVector3(1, 1, 0),
+                    new IntVector3(2, 1, 0),
+                    new IntVector3(1, 0, 0) };
                 break;
             case PuzzlePieceTypes.Helix:
                 color = Color.magenta;
-                blocks = new List<TetrisPuzzlePieceBlock>() {
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(0, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 1, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 1, 1)) };
+                blocks = new List<IntVector3>() {
+                    new IntVector3(0, 0, 0),
+                    new IntVector3(1, 0, 0),
+                    new IntVector3(1, 1, 0),
+                    new IntVector3(1, 1, 1) };
                 break;
             case PuzzlePieceTypes.ReverseHelix:
                 color = Color.gray;
-                blocks = new List<TetrisPuzzlePieceBlock>() {
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(0, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(0, 0, 1)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 0, 0)),
-                    new TetrisPuzzlePieceBlock(this, new IntVector3(1, 1, 0)) };
+                blocks = new List<IntVector3>() {
+                    new IntVector3(0, 0, 0),
+                    new IntVector3(0, 0, 1),
+                    new IntVector3(1, 0, 0),
+                    new IntVector3(1, 1, 0) };
                 break;
             default:
                 throw new NotImplementedException("Unsupported puzzle piece type");
         }
+        // adjust block position so it rotates in the center
+        var minV = new IntVector3(TetrisCubeSolver.BOARD_SIZE, TetrisCubeSolver.BOARD_SIZE, TetrisCubeSolver.BOARD_SIZE);
+        var maxV = new IntVector3(0, 0, 0);
+        foreach(var v in blocks)
+        {
+            minV = new IntVector3(Mathf.Min(minV.x, v.x), Mathf.Min(minV.y, v.y), Mathf.Min(minV.z, v.z));
+            maxV = new IntVector3(Mathf.Max(maxV.x, v.x), Mathf.Max(maxV.y, v.y), Mathf.Max(maxV.z, v.z));
+        }
+        this.blocks = blocks.Select(v => {
+            var normalizedPosition = new Vector3(v.x - (maxV.x - minV.x) / 2, v.y - (maxV.y - minV.y) / 2, v.z - (maxV.z - minV.z) / 2);
+            return new TetrisPuzzlePieceBlock(this, normalizedPosition.ToIntVector3());
+        }).ToList();
     }
 
     public List<PuzzlePiecePosition> ValidBoardPositions()

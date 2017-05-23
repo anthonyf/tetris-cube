@@ -79,9 +79,8 @@ public class TetrisCube : MonoBehaviour {
         }
         puzzlePieces = new List<PuzzlePiece>();
 
-        //puzzlePieces.AddRange(SpawnAllPuzzlePieces());
-        puzzlePieces.AddRange(SpawnAustinPuzzlePieces());
-        //puzzlePieces.AddRange(SpawnAllIBeamPieces());
+        //puzzlePieces.AddRange(SpawnPuzzlePieces(TetrisCubeSolver.CreateAllLPieces()));
+        puzzlePieces.AddRange(SpawnPuzzlePieces(TetrisCubeSolver.CreateAllPuzzlePieces()));
 
         PlacePiecesInACircle();
     }
@@ -92,151 +91,68 @@ public class TetrisCube : MonoBehaviour {
         {
             var radius = 8f;
             var angle = i * Mathf.PI * 2f / puzzlePieces.Count;
-            puzzlePieces[i].transform.localPosition = new IntVector3(
-                (int)Mathf.Round(Mathf.Cos(angle) * radius), 
+            var position = new IntVector3(
+                (int)Mathf.Round(Mathf.Cos(angle) * radius),
                 (int)Mathf.Round(Mathf.Sin(angle) * radius), 0).ToVector3();
+            puzzlePieces[i].transform.localPosition = position;
+            puzzlePieces[i].initialPosition = position;
+            puzzlePieces[i].initialRotation = Vector3.zero;
         }
     }
 
-    PuzzlePiece SpawnPuzzlePiece(PuzzlePieceTypes type)
+    private IEnumerable<PuzzlePiece> SpawnPuzzlePieces(IEnumerable<TetrisPuzzlePiece> pieces)
+    {
+        return pieces.Select(p => SpawnPuzzlePiece(p));
+    }
+
+    PuzzlePiece SpawnPuzzlePiece(TetrisPuzzlePiece piece)
     {
         var p = Instantiate(puzzlePiecePrefab);
         p.transform.SetParent(PiecesContainer.transform, false);
-        p.puzzlePiece = new TetrisPuzzlePiece(type);
+        p.puzzlePiece = piece;
         return p;
     }
 
-    List<PuzzlePiece> SpawnAllIBeamPieces()
+    IEnumerator SolveCoroutine()
     {
-        var pieces = new List<PuzzlePiece>();
-
-        for(int i = 0; i < 16; i++)
+        var steps = TetrisCubeSolver.Solve(puzzlePieces.Select(p => p.puzzlePiece).ToList(), true);
+        foreach(var step in steps)
         {
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-        }
-        return pieces;
-    }
-
-    List<PuzzlePiece> SpawnAustinPuzzlePieces()
-    {
-        var pieces = new List<PuzzlePiece>();
-
-        for(int i = 0; i < 3; i++)
-        {
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
-        }
-
-        pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Axis));
-
-        return pieces;
-    }
-
-    List<PuzzlePiece> SpawnAllPuzzlePieces()
-    {
-        var pieces = new List<PuzzlePiece>();
-
-        for (int i = 0; i < 2; i++)
-        {
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.IBeam));
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Box));
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Axis));
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.L));
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Bump));
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.S));
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.Helix));
-            pieces.Add(SpawnPuzzlePiece(PuzzlePieceTypes.ReverseHelix));
-        }
-
-        return pieces;
-    }
-
-    IEnumerator SolveHoles(IEnumerable<PuzzlePiece> unplacedPieces, IEnumerable<PuzzlePiece> placedPieces, PuzzleGrid grid, Action<IEnumerable<PuzzlePiece>> solvedFun)
-    {
-        var holes = grid.FindHoles();
-        if(!grid.IsPuzzleSolvable(holes))
-        {
-            // nothing to do, puzzle is in unsolvable state
-            yield return null;
-        }
-        if(holes.Count() == 0)
-        {
-            solvedFun(placedPieces);
-            yield break;
-        }
-        var hole = holes.First();
-        foreach (var piece in unplacedPieces)
-        {
-            var savedOriginalRotation = piece.transform.localEulerAngles.ToIntVector3();
-            var savedOriginalPosition = piece.transform.localPosition.ToIntVector3();
-            piece.transform.SetParent(CubeContainer.transform, true);
-
-            foreach (var validPosition in piece.puzzlePiece.ValidBoardPositions())
-            {                
-                if (hole.IsSupersetOf(validPosition.blockPositions))
-                {
-                    grid.AddPiece(validPosition.blockPositions);
-
-                    // animate movement only when we found a valid move
-                    yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition.ToIntVector3(), piece.transform.localEulerAngles.ToIntVector3(), validPosition.position,
-                        validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
-                    yield return StartCoroutine(SolveHoles(unplacedPieces.Where(p => p != piece), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
-
-                    grid.RemovePiece(validPosition.blockPositions);
-                }
-            }
-
-            // Done trying to fit this piece, put piece back in the ring where it came from
-            piece.transform.SetParent(PiecesContainer.transform, true);
-            yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition.ToIntVector3(), piece.transform.localEulerAngles.ToIntVector3(),
-                savedOriginalPosition, savedOriginalRotation, moveSpeeds[moveSpeedIndex]));
-        }
-    }
-
-    IEnumerator Solve(IEnumerable<PuzzlePiece> unplacedPieces, IEnumerable<PuzzlePiece> placedPieces, PuzzleGrid grid, Action<IEnumerable<PuzzlePiece>> solvedFun)
-    {
-        if(unplacedPieces.Count() == 0)
-        {
-            solvedFun(placedPieces);
-            yield break;
-        }
-
-        var piece = unplacedPieces.First();
-        var savedOriginalRotation = piece.transform.localEulerAngles.ToIntVector3();
-        var savedOriginalPosition = piece.transform.localPosition.ToIntVector3();
-        piece.transform.SetParent(CubeContainer.transform, true);
-        foreach (var validPosition in piece.puzzlePiece.ValidBoardPositions())
-        {
-            if (grid.IsValidMove(validPosition.blockPositions))
+            PuzzlePiecePosition position;
+            PuzzlePiece puzzlePieceGO;
+            switch(step.type)
             {
-                grid.AddPiece(validPosition.blockPositions);
-                if(grid.IsPuzzleSolvable(grid.FindHoles()))
-                {
-                    // animate movement only when we found a valid move
-                    yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition.ToIntVector3(), piece.transform.localEulerAngles.ToIntVector3(), validPosition.position,
-                        validPosition.eulerAngle, moveSpeeds[moveSpeedIndex]));
-                    yield return StartCoroutine(Solve(unplacedPieces.Skip(1), placedPieces.Concat(new PuzzlePiece[] { piece }), grid, solvedFun));
-                }
-                grid.RemovePiece(validPosition.blockPositions);
+                case TetrisCubeSolver.SolveStep.StepType.AddPiece:
+                    position = step.positions.Last();
+                    puzzlePieceGO = puzzlePieces.Where(p => p.puzzlePiece == position.puzzlePiece).First();
+                    puzzlePieceGO.transform.SetParent(CubeContainer.transform, true);
+                    yield return StartCoroutine(
+                        MovePiece(puzzlePieceGO,
+                            puzzlePieceGO.transform.localPosition, puzzlePieceGO.transform.localEulerAngles,
+                            position.position.ToVector3(), position.eulerAngle.ToVector3(), 
+                            moveSpeeds[moveSpeedIndex]));
+                    break;
+                case TetrisCubeSolver.SolveStep.StepType.RemovePiece:
+                    position = step.positions.Last();
+                    puzzlePieceGO = puzzlePieces.Where(p => p.puzzlePiece == position.puzzlePiece).First();
+                    puzzlePieceGO.transform.SetParent(PiecesContainer.transform, true);
+                    yield return StartCoroutine(
+                        MovePiece(puzzlePieceGO,
+                            puzzlePieceGO.transform.localPosition, puzzlePieceGO.transform.localEulerAngles, 
+                            puzzlePieceGO.initialPosition, puzzlePieceGO.initialRotation,
+                            moveSpeeds[moveSpeedIndex]));
+                    break;
+                case TetrisCubeSolver.SolveStep.StepType.Solved:
+                    yield break;
+                default:
+                    throw new InvalidOperationException();
             }
         }
-
-        // Done trying to fit this piece, put piece back in the ring where it came from
-        piece.transform.SetParent(PiecesContainer.transform, true);
-        yield return StartCoroutine(MovePiece(piece, piece.transform.localPosition.ToIntVector3(), piece.transform.localEulerAngles.ToIntVector3(), 
-            savedOriginalPosition, savedOriginalRotation, moveSpeeds[moveSpeedIndex]));
     }
 
-    IEnumerator MovePiece(PuzzlePiece piece, IntVector3 _fromPosition, IntVector3 _fromRotation, IntVector3 _toPosition, IntVector3 _toRotation, float speed)
-    {
-        var toPosition = _toPosition.ToVector3();
-        var toRotation = _toRotation.ToVector3();
-        var fromRotation = _fromRotation.ToVector3();
-        var fromPosition = _fromPosition.ToVector3();
 
+    static IEnumerator MovePiece(PuzzlePiece piece, Vector3 fromPosition, Vector3 fromRotation, Vector3 toPosition, Vector3 toRotation, float speed)
+    {
         if (speed == 0f)
         {
             piece.transform.localPosition = toPosition;
@@ -267,12 +183,7 @@ public class TetrisCube : MonoBehaviour {
         {
             running = true;
             startButtonText.text = "Stop";
-            StartCoroutine(SolveHoles(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
-            //StartCoroutine(Solve(puzzlePieces.Select(p => p), new List<PuzzlePiece>(), new PuzzleGrid(), solution =>
-            {
-                Debug.Log("Solved!");
-                StopAllCoroutines();
-            }));
+            StartCoroutine(SolveCoroutine());
         }
     }
 
