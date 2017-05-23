@@ -10,11 +10,9 @@ public class TetrisCubeSolverTest
 
 	[Test]
 	public void TestSolveIBeams() {
-        var placedPieces = TetrisCubeSolver.Solve(TetrisCubeSolver.SpawnAllIBeamPieces(), 
-            (piece, pos) =>
-            {
-                // do nothing  
-            }).First();
+        var steps = TetrisCubeSolver.Solve(TetrisCubeSolver.SpawnAllIBeamPieces())
+            .Select(s => s.type == TetrisCubeSolver.SolveStep.StepType.Solved)
+            .First();
 
         Assert.Pass();
 	}
@@ -22,11 +20,9 @@ public class TetrisCubeSolverTest
     [Test]
     public void TestSolveLPieces()
     {
-        var placedPieces = TetrisCubeSolver.Solve(TetrisCubeSolver.SpawnAllLPieces(),
-            (piece, pos) =>
-            {
-                // do nothing  
-            }).First();
+        var steps = TetrisCubeSolver.Solve(TetrisCubeSolver.SpawnAllLPieces())
+            .Select(s => s.type == TetrisCubeSolver.SolveStep.StepType.Solved)
+            .First();
 
         Assert.Pass();
     }
@@ -34,11 +30,9 @@ public class TetrisCubeSolverTest
     [Test]
     public void TestSolveAustinPieces()
     {
-        var placedPieces = TetrisCubeSolver.Solve(TetrisCubeSolver.SpawnAustinPuzzlePieces(),
-            (piece, pos) =>
-            {
-                // do nothing  
-            }).First();
+        var steps = TetrisCubeSolver.Solve(TetrisCubeSolver.SpawnAustinPuzzlePieces())
+            .Select(s => s.type == TetrisCubeSolver.SolveStep.StepType.Solved)
+            .First();
 
         Assert.Pass();
     }
@@ -46,11 +40,9 @@ public class TetrisCubeSolverTest
     [Test]
     public void TestSolveNormalTetrisPieces()
     {
-        var placedPieces = TetrisCubeSolver.Solve(TetrisCubeSolver.SpawnAllPuzzlePieces(),
-            (piece, pos) =>
-            {
-                // do nothing  
-            }).First();
+        var steps = TetrisCubeSolver.Solve(TetrisCubeSolver.SpawnAllPuzzlePieces())
+            .Select(s => s.type == TetrisCubeSolver.SolveStep.StepType.Solved)
+            .First();
 
         Assert.Pass();
     }

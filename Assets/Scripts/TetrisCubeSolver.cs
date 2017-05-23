@@ -67,24 +67,38 @@ public class TetrisCubeSolver {
         return pieces;
     }
 
-    public static IEnumerable<List<PuzzlePiecePosition>> Solve(
-        List<TetrisPuzzlePiece> pieces,
-        Action<TetrisPuzzlePiece, PuzzlePiecePosition> addPieceFun)
+    public class SolveStep
     {
-        //return SolveHoles(pieces, new List<PuzzlePiecePosition>(), new PuzzleGrid(), addPieceFun);        
-        return SolveBruteForce(pieces, new List<PuzzlePiecePosition>(), new PuzzleGrid(), addPieceFun);
+        public enum StepType
+        {
+            AddPiece,
+            Solved
+        }
+        public StepType type { get; private set; }
+        public IEnumerable<PuzzlePiecePosition> positions { get; private set; }
+        public SolveStep(StepType type, IEnumerable<PuzzlePiecePosition> positions)
+        {
+            this.type = type;
+            this.positions = positions;
+        }
     }
 
-    static IEnumerable<List<PuzzlePiecePosition>> SolveBruteForce(
+    public static IEnumerable<SolveStep> Solve(
+        List<TetrisPuzzlePiece> pieces)
+    {
+        //return SolveHoles(pieces, new List<PuzzlePiecePosition>(), new PuzzleGrid());        
+        return SolveBruteForce(pieces, new List<PuzzlePiecePosition>(), new PuzzleGrid());
+    }
+
+    static IEnumerable<SolveStep> SolveBruteForce(
         IEnumerable<TetrisPuzzlePiece> unplacedPieces,
         IEnumerable<PuzzlePiecePosition> placedPieces,
-        PuzzleGrid grid,
-        Action<TetrisPuzzlePiece, PuzzlePiecePosition> addPieceFun)
+        PuzzleGrid grid)
     {
         if (unplacedPieces.Count() == 0)
         {
             // solved
-            yield return placedPieces.ToList();
+            yield return new SolveStep(SolveStep.StepType.Solved, placedPieces);
         }
 
         var piece = unplacedPieces.First();
@@ -95,8 +109,9 @@ public class TetrisCubeSolver {
                 grid.AddPiece(validPosition.blockPositions);
                 if (/*grid.IsPuzzleSolvable()*/ grid.HasOnlyOneHole(grid.FindHoles()))
                 {
-                    addPieceFun(piece, validPosition);
-                    var e = SolveHoles(unplacedPieces.Where(p => p != piece), placedPieces.Concat(new PuzzlePiecePosition[] { validPosition }), grid, addPieceFun);
+                    var newPlacedPieces = placedPieces.Concat(new PuzzlePiecePosition[] { validPosition });
+                    yield return new SolveStep(SolveStep.StepType.AddPiece, newPlacedPieces);
+                    var e = SolveBruteForce(unplacedPieces.Where(p => p != piece), newPlacedPieces, grid);
                     foreach (var s in e)
                     {
                         yield return s;
@@ -108,11 +123,10 @@ public class TetrisCubeSolver {
     }
 
 
-    static IEnumerable<List<PuzzlePiecePosition>> SolveHoles(
+    static IEnumerable<SolveStep> SolveHoles(
         IEnumerable<TetrisPuzzlePiece> unplacedPieces, 
         IEnumerable<PuzzlePiecePosition> placedPieces, 
-        PuzzleGrid grid,
-        Action<TetrisPuzzlePiece, PuzzlePiecePosition> addPieceFun)
+        PuzzleGrid grid)
     {
         var holes = grid.FindHoles();
         if (!grid.IsPuzzleSolvable(holes))
@@ -123,7 +137,7 @@ public class TetrisCubeSolver {
         if (holes.Count() == 0)
         {
             // solved
-            yield return placedPieces.ToList();
+            yield return new SolveStep(SolveStep.StepType.Solved, placedPieces);
         }
         var hole = holes.First();
         foreach (var piece in unplacedPieces)
@@ -133,8 +147,9 @@ public class TetrisCubeSolver {
                 if (hole.IsSupersetOf(validPosition.blockPositions))
                 {
                     grid.AddPiece(validPosition.blockPositions);
-                    addPieceFun(piece, validPosition);
-                    var e = SolveHoles(unplacedPieces.Where(p => p != piece), placedPieces.Concat(new PuzzlePiecePosition[] { validPosition }), grid, addPieceFun);
+                    var newPlacedPieces = placedPieces.Concat(new PuzzlePiecePosition[] { validPosition });
+                    yield return new SolveStep(SolveStep.StepType.AddPiece, newPlacedPieces);
+                    var e = SolveHoles(unplacedPieces.Where(p => p != piece), newPlacedPieces, grid);
                     foreach(var s in e)
                     {
                         yield return s;

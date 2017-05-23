@@ -49,6 +49,10 @@ public class TwentyFourRotations
         return points.Select(p => IntVector3Extensions.ToIntVector3(m.MultiplyPoint(p.ToVector3()))).ToList();
     }
 
+    /// <summary>
+    /// Cubes have exactly 24 unique rotations.  This function finds them.
+    /// </summary>
+    /// <returns></returns>
     public static List<IntVector3> Calculate24Rotations()
     {
         var pointsToRotationsMap = new Dictionary<IntVector3, IntVector3>();
